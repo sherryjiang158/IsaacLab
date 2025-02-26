@@ -32,3 +32,26 @@ gym.register(
         "skrl_cfg_entry_point": f"{agents.__name__}:skrl_flat_ppo_cfg.yaml",
     },
 )
+
+gym.register(
+    id="Isaac-Kick-Spot-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.kick_env_cfg:SpotKickEnvCfg",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:SpotKickPPORunnerCfg",
+        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_kick_ppo_cfg.yaml",
+    },
+)
+
+# Optional: Register a play/evaluation version if needed
+gym.register(
+    id="Isaac-Kick-Spot-Play-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.kick_env_cfg:SpotKickEnvCfg_PLAY",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:SpotKickPPORunnerCfg",
+        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_kick_ppo_cfg.yaml",
+    },
+)
