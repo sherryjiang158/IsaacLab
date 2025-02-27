@@ -37,7 +37,7 @@ gym.register(
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     disable_env_checker=True,
     kwargs={
-        "env_cfg_entry_point": f"{__name__}.kick_env_cfg:SpotKickEnvCfg",
+        "env_cfg_entry_point": f"{__name__}.spot_kick_env_cfg:SpotKickEnvCfg",
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:SpotKickPPORunnerCfg",
         "skrl_cfg_entry_point": f"{agents.__name__}:skrl_kick_ppo_cfg.yaml",
     },
@@ -49,7 +49,7 @@ gym.register(
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     disable_env_checker=True,
     kwargs={
-        "env_cfg_entry_point": f"{__name__}.kick_env_cfg:SpotKickEnvCfg_PLAY",
+        "env_cfg_entry_point": f"{__name__}.spot_kick_env_cfg:SpotKickEnvCfg_PLAY",
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:SpotKickPPORunnerCfg",
         "skrl_cfg_entry_point": f"{agents.__name__}:skrl_kick_ppo_cfg.yaml",
     },
