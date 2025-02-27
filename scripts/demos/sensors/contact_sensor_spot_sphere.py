@@ -88,6 +88,7 @@ class ContactSensorSceneCfg(InteractiveSceneCfg):
         update_period=0.0,
         history_length=6,
         debug_vis=True,
+        filter_prim_paths_expr=["/World/defaultGroundPlane"],
     )
 
 
