@@ -68,23 +68,23 @@ class ContactSensorSceneCfg(InteractiveSceneCfg):
     )
 
     contact_forces_LF = ContactSensorCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/LF_FOOT",
+        prim_path="{ENV_REGEX_NS}/Robot/lf_foot",
         update_period=0.0,
         history_length=6,
         debug_vis=True,
-        filter_prim_paths_expr=["{ENV_REGEX_NS}/Cube"],
+        filter_prim_paths_expr=["{ENV_REGEX_NS}/Sphere"],
     )
 
     contact_forces_RF = ContactSensorCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/RF_FOOT",
+        prim_path="{ENV_REGEX_NS}/Robot/rf_foot",
         update_period=0.0,
         history_length=6,
         debug_vis=True,
-        filter_prim_paths_expr=["{ENV_REGEX_NS}/Cube"],
+        filter_prim_paths_expr=["{ENV_REGEX_NS}/Sphere"],
     )
 
     contact_forces_H = ContactSensorCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/.*H_FOOT",
+        prim_path="{ENV_REGEX_NS}/Robot/.*h_foot",
         update_period=0.0,
         history_length=6,
         debug_vis=True,
