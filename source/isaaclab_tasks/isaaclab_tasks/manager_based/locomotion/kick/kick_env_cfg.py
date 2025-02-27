@@ -8,6 +8,8 @@ from dataclasses import MISSING
 
 import isaaclab.sim as sim_utils
 from isaaclab.assets import ArticulationCfg, AssetBaseCfg
+from isaaclab.assets import RigidObject, RigidObjectCfg
+
 from isaaclab.envs import ManagerBasedRLEnvCfg
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
@@ -50,27 +52,52 @@ class MySceneCfg(InteractiveSceneCfg):
     #     # ),
     #     debug_vis=False,
     # )
-    
+
+    # lights
+    dome_light = AssetBaseCfg(
+        prim_path="/World/Light", spawn=sim_utils.DomeLightCfg(intensity=3000.0, color=(0.75, 0.75, 0.75))
+    )
     # Robot configuration
     robot: ArticulationCfg = MISSING
     
-    # Ball configuration
-    ball = sim_utils.RigidBodyCfg(
-        prim_path="{ENV_REGEX_NS}/Ball",
-        mass=0.45,  # Soccer ball mass (kg)
-        radius=0.11,  # Soccer ball radius (m)
-        physics_material=sim_utils.RigidBodyMaterialCfg(
-            static_friction=0.8,
-            dynamic_friction=0.6,
-            restitution=0.7,
+    # Rigid Object to create a ball
+    sphere_cfg = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/Sphere",
+        spawn=sim_utils.SphereCfg(
+            radius=0.1,
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(),
+            mass_props=sim_utils.MassPropertiesCfg(mass=0.45),
+            collision_props=sim_utils.CollisionPropertiesCfg(),
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 1.0, 0.0), metallic=0.2),
         ),
+        init_state=RigidObjectCfg.InitialStateCfg(),
     )
+    ball = RigidObject(cfg=sphere_cfg)
     
     # Contact sensors
-    contact_forces = ContactSensorCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/.*",
+    # contact_forces = ContactSensorCfg(
+    #     prim_path="{ENV_REGEX_NS}/Robot/.*",
+    #     history_length=3,
+    #     track_air_time=True
+    # )
+    contact_forces_kick = ContactSensorCfg(
+    prim_path="{ENV_REGEX_NS}/Robot/RF_FOOT",  # Kicking foot
+    update_period=0.0,
+    history_length=3,
+    debug_vis=True,
+    filter_prim_paths_expr=["{ENV_REGEX_NS}/Ball"],  # Only detect ball contact
+    )
+
+    contact_forces_support = ContactSensorCfg(
+        prim_path=[
+            "{ENV_REGEX_NS}/Robot/LF_FOOT",
+            "{ENV_REGEX_NS}/Robot/LH_FOOT",
+            "{ENV_REGEX_NS}/Robot/RH_FOOT"
+        ],  # Support feet
+        update_period=0.0,
         history_length=3,
-        track_air_time=True
+        debug_vis=True,
+        filter_prim_paths_expr=["{ENV_REGEX_NS}/Ground"],  # Only detect ground contact
     )
 
 @configclass
