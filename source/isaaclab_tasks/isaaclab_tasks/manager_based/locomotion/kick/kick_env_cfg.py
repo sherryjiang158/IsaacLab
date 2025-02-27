@@ -62,7 +62,7 @@ class MySceneCfg(InteractiveSceneCfg):
     
     # Rigid Object to create a ball
     sphere_cfg = RigidObjectCfg(
-        prim_path="{ENV_REGEX_NS}/Sphere",
+        prim_path="/World/{ENV_REGEX_NS}/Sphere",
         spawn=sim_utils.SphereCfg(
             radius=0.1,
             rigid_props=sim_utils.RigidBodyPropertiesCfg(),
@@ -85,7 +85,7 @@ class MySceneCfg(InteractiveSceneCfg):
     update_period=0.0,
     history_length=3,
     debug_vis=True,
-    filter_prim_paths_expr=["{ENV_REGEX_NS}/Ball"],  # Only detect ball contact
+    filter_prim_paths_expr=["{ENV_REGEX_NS}/Sphere"],  # Only detect ball contact
     )
 
     contact_forces_support = ContactSensorCfg(
