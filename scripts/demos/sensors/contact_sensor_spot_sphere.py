@@ -83,8 +83,8 @@ class ContactSensorSceneCfg(InteractiveSceneCfg):
         filter_prim_paths_expr=["{ENV_REGEX_NS}/Sphere"],
     )
 
-    contact_forces_H = ContactSensorCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/.h*_foot",
+    contact_forces_RH = ContactSensorCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/hr_foot",
         update_period=0.0,
         history_length=6,
         debug_vis=True,
