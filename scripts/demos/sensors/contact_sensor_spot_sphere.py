@@ -43,8 +43,8 @@ class ContactSensorSceneCfg(InteractiveSceneCfg):
     """Design the scene with sensors on the robot."""
 
     # ground plane
-    # ground = AssetBaseCfg(prim_path="/World/defaultGroundPlane", spawn=sim_utils.GroundPlaneCfg())
-    ground = AssetBaseCfg(prim_path="{ENV_REGEX_NS}/defaultGroundPlane", spawn=sim_utils.GroundPlaneCfg())
+    ground = AssetBaseCfg(prim_path="/World/defaultGroundPlane", spawn=sim_utils.GroundPlaneCfg())
+    #ground = AssetBaseCfg(prim_path="/World/defaultGroundPlane", spawn=sim_utils.GroundPlaneCfg())
 
     # lights
     dome_light = AssetBaseCfg(
@@ -115,7 +115,7 @@ class ContactSensorSceneCfg(InteractiveSceneCfg):
         update_period=0.0,
         history_length=6,
         debug_vis=True,
-        filter_prim_paths_expr=["{ENV_REGEX_NS}/defaultGroundPlane"],
+        filter_prim_paths_expr=["/World/defaultGroundPlane"],
     )
 
 
