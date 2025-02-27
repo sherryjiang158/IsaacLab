@@ -83,7 +83,7 @@ class ContactSensorSceneCfg(InteractiveSceneCfg):
 
     cube = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/Cube",
-        spawn=sim_utils.CubeCfg(
+        spawn=sim_utils.CuboidCfg(
             size=0.1,
             rigid_props=sim_utils.RigidBodyPropertiesCfg(),
             mass_props=sim_utils.MassPropertiesCfg(mass=100.0),
