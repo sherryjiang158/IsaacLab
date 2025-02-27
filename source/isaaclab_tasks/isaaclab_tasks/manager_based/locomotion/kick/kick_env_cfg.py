@@ -28,34 +28,28 @@ import isaaclab_tasks.manager_based.locomotion.kick.mdp as mdp
 class MySceneCfg(InteractiveSceneCfg):
     """Configuration for the kicking scene."""
     
-    # # Simple flat ground for kicking
-    # ground = sim_utils.RigidBodyCfg(
-    #     prim_path="/World/ground",
+    ground = AssetBaseCfg(prim_path="/World/defaultGroundPlane", spawn=sim_utils.GroundPlaneCfg())
+
+        # ground terrain
+    # ground = TerrainImporterCfg(
+    #     prim_path="/World/defaultGroundPlane",
+    #     terrain_type="generator",
+    #     terrain_generator=None,
+    #     # max_init_terrain_level=5,
+    #     # collision_group=-1,
     #     physics_material=sim_utils.RigidBodyMaterialCfg(
+    #         friction_combine_mode="multiply",
+    #         restitution_combine_mode="multiply",
     #         static_friction=1.0,
     #         dynamic_friction=1.0,
     #     ),
+    #     # visual_material=sim_utils.MdlFileCfg(
+    #     #     mdl_path=f"{ISAACLAB_NUCLEUS_DIR}/Materials/TilesMarbleSpiderWhiteBrickBondHoned/TilesMarbleSpiderWhiteBrickBondHoned.mdl",
+    #     #     project_uvw=True,
+    #     #     texture_scale=(0.25, 0.25),
+    #     # ),
+    #     debug_vis=False,
     # )
-        # ground terrain
-    terrain = TerrainImporterCfg(
-        prim_path="/World/ground",
-        terrain_type="generator",
-        terrain_generator=None,
-        # max_init_terrain_level=5,
-        # collision_group=-1,
-        physics_material=sim_utils.RigidBodyMaterialCfg(
-            friction_combine_mode="multiply",
-            restitution_combine_mode="multiply",
-            static_friction=1.0,
-            dynamic_friction=1.0,
-        ),
-        # visual_material=sim_utils.MdlFileCfg(
-        #     mdl_path=f"{ISAACLAB_NUCLEUS_DIR}/Materials/TilesMarbleSpiderWhiteBrickBondHoned/TilesMarbleSpiderWhiteBrickBondHoned.mdl",
-        #     project_uvw=True,
-        #     texture_scale=(0.25, 0.25),
-        # ),
-        debug_vis=False,
-    )
     
     # Robot configuration
     robot: ArticulationCfg = MISSING
