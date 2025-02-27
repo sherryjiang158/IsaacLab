@@ -68,7 +68,7 @@ class ContactSensorSceneCfg(InteractiveSceneCfg):
     )
 
     contact_forces_LF = ContactSensorCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/lf_foot",
+        prim_path="{ENV_REGEX_NS}/Robot/fl_foot",
         update_period=0.0,
         history_length=6,
         debug_vis=True,
@@ -76,7 +76,7 @@ class ContactSensorSceneCfg(InteractiveSceneCfg):
     )
 
     contact_forces_RF = ContactSensorCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/rf_foot",
+        prim_path="{ENV_REGEX_NS}/Robot/fr_foot",
         update_period=0.0,
         history_length=6,
         debug_vis=True,
@@ -84,7 +84,7 @@ class ContactSensorSceneCfg(InteractiveSceneCfg):
     )
 
     contact_forces_H = ContactSensorCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/.*h_foot",
+        prim_path="{ENV_REGEX_NS}/Robot/.h*_foot",
         update_period=0.0,
         history_length=6,
         debug_vis=True,
