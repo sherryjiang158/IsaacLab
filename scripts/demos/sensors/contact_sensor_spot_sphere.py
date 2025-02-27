@@ -43,7 +43,8 @@ class ContactSensorSceneCfg(InteractiveSceneCfg):
     """Design the scene with sensors on the robot."""
 
     # ground plane
-    ground = AssetBaseCfg(prim_path="/World/defaultGroundPlane", spawn=sim_utils.GroundPlaneCfg())
+    # ground = AssetBaseCfg(prim_path="/World/defaultGroundPlane", spawn=sim_utils.GroundPlaneCfg())
+    ground = AssetBaseCfg(prim_path="{ENV_REGEX_NS}/defaultGroundPlane", spawn=sim_utils.GroundPlaneCfg())
 
     # lights
     dome_light = AssetBaseCfg(
@@ -80,12 +81,25 @@ class ContactSensorSceneCfg(InteractiveSceneCfg):
         init_state=RigidObjectCfg.InitialStateCfg(pos=(1, 1, 0.05)),
     )
 
+    sphere3 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/Sphere3",
+        spawn=sim_utils.SphereCfg(
+            radius=0.1,
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(),
+            mass_props=sim_utils.MassPropertiesCfg(mass=100.0),
+            collision_props=sim_utils.CollisionPropertiesCfg(),
+            physics_material=sim_utils.RigidBodyMaterialCfg(static_friction=1.0),
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 1.0), metallic=0.2),
+        ),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.25, 0.25, 0.05)),
+    )
+
     contact_forces_LF = ContactSensorCfg(
         prim_path="{ENV_REGEX_NS}/Robot/fl_foot",
         update_period=0.0,
         history_length=6,
         debug_vis=True,
-        filter_prim_paths_expr=["{ENV_REGEX_NS}/Sphere"],
+        filter_prim_paths_expr=["{ENV_REGEX_NS}/Sphere3"],
     )
 
     contact_forces_RF = ContactSensorCfg(
@@ -93,7 +107,7 @@ class ContactSensorSceneCfg(InteractiveSceneCfg):
         update_period=0.0,
         history_length=6,
         debug_vis=True,
-        filter_prim_paths_expr=["{ENV_REGEX_NS}/Sphere"],
+        filter_prim_paths_expr=["{ENV_REGEX_NS}/Sphere3"],
     )
 
     contact_forces_H = ContactSensorCfg(
@@ -101,7 +115,7 @@ class ContactSensorSceneCfg(InteractiveSceneCfg):
         update_period=0.0,
         history_length=6,
         debug_vis=True,
-        filter_prim_paths_expr=["/World/defaultGroundPlane"],
+        filter_prim_paths_expr=["{ENV_REGEX_NS}/defaultGroundPlane"],
     )
 
 
