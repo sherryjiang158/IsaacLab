@@ -51,6 +51,9 @@ class ContactSensorSceneCfg(InteractiveSceneCfg):
         prim_path="/World/Light", spawn=sim_utils.DomeLightCfg(intensity=3000.0, color=(0.75, 0.75, 0.75))
     )
 
+    # robot
+    robot = SPOT_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+
     # Rigid Object
     sphere = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/Sphere",
@@ -113,11 +116,10 @@ class ContactSensorSceneCfg(InteractiveSceneCfg):
         update_period=0.0,
         history_length=6,
         debug_vis=True,
-        filter_prim_paths_expr=["/World/defaultGroundPlane"],
+        #filter_prim_paths_expr=["/World/defaultGroundPlane"],
     )
 
-    # robot
-    robot = SPOT_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+    
 
 
 def run_simulator(sim: sim_utils.SimulationContext, scene: InteractiveScene):
