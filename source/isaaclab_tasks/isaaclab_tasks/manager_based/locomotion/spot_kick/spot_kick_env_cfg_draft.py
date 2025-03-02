@@ -13,8 +13,8 @@ from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.utils import configclass
 from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
 
-import isaaclab_tasks.manager_based.locomotion.kick.mdp as mdp
-from isaaclab_tasks.manager_based.locomotion.kick.kick_env_cfg import LocomotionKickEnvCfg
+import isaaclab_tasks.manager_based.locomotion.spot_kick.mdp as mdp
+from IsaacLab.source.isaaclab_tasks.isaaclab_tasks.manager_based.locomotion.spot_kick.spot_kick_env_cfg import LocomotionKickEnvCfg
 
 ##
 # Pre-defined configs
