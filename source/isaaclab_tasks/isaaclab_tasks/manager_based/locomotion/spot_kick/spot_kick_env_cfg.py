@@ -44,7 +44,7 @@ class MySceneCfg(InteractiveSceneCfg):
     
     # Rigid Object to create a ball
     ball = RigidObjectCfg(
-        prim_path="/World/{ENV_REGEX_NS}/Sphere",
+        prim_path="{ENV_REGEX_NS}/Sphere",
         spawn=sim_utils.SphereCfg(
             radius=0.1,
             rigid_props=sim_utils.RigidBodyPropertiesCfg(),
