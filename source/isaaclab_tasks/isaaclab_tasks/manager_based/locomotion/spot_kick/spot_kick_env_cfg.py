@@ -207,14 +207,14 @@ class EventCfg:
         },
     )
 
-    # # Randomize the ball's starting position for additional variability
-    # randomize_ball_position = EventTerm(
-    #     func=mdp.randomize_ball_position,
-    #     mode="reset",
-    #     params={
-    #         "position_range": ((-0.1, 0.1), (-0.1, 0.1), (0.0, 0.0)), # !!!! May need to adjust based on code running situation
-    #     },
-    # )
+    # Randomize the ball's starting position for additional variability
+    randomize_ball_position = EventTerm(
+        func=mdp.randomize_ball_position,
+        mode="reset",
+        params={
+            "position_range": ((-0.1, 0.1), (-0.1, 0.1), (0.0, 0.0)), # !!!! May need to adjust based on code running situation
+        },
+    )
 
     # Reset events
 
@@ -354,8 +354,8 @@ class SpotKickEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.disable_contact_processing = False
         
         # Update sensor periods
-        if self.scene.contact_forces is not None:
-            self.scene.contact_forces.update_period = self.sim.dt
+        if self.scene.contact_forces_support is not None:
+            self.scene.contact_forces_support.update_period = self.sim.dt
 
 
 class SpotKickEnvCfg_PLAY(SpotKickEnvCfg):
