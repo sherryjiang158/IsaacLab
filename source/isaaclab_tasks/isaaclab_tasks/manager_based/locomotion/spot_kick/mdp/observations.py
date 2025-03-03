@@ -35,6 +35,14 @@ def ball_velocity(env):
     print("print: root_state_w", ball_data.root_state_w)
     # root_state_w Root state [pos, quat, lin_vel, ang_vel] in simulation world frame.
     # but the tensor is flattened.
+    """
+    # e.g.[ 1.2500e+00,  0.0000e+00,  3.0000e-02,  1.0000e+00,  0.0000e+00,
+          0.0000e+00,  0.0000e+00, -1.4009e-07,  0.0000e+00,  3.8412e-08,
+          0.0000e+00,  3.5013e-06,  0.0000e+00],
+        [-1.2500e+00,  0.0000e+00,  3.0000e-02,  1.0000e+00,  0.0000e+00,
+          0.0000e+00,  0.0000e+00, -1.4009e-07,  0.0000e+00,  3.8412e-08,
+          0.0000e+00,  3.5013e-06,  0.0000e+00]], device='cuda:0')
+    """
     vel = ball_data.root_state_w[:, 7:10] 
     return vel 
 
