@@ -28,11 +28,12 @@ def rel_ball_leg_position(env: ManagerBasedRLEnv) -> torch.Tensor:
 def ball_velocity(env):
     """
     Returns the ball's velocity.
-    Since it's rigid object. Maybe we can try 
-    root_velocity – Root center of mass velocities in simulation world frame. Shape is (len(env_ids), 6).
+    Since it's rigid object. Maybe we should see RigidObjectData:
+    https://isaac-sim.github.io/IsaacLab/main/source/api/lab/isaaclab.assets.html#isaaclab.assets.RigidObjectData
     """
     ball_data = env.scene["ball"].data
-    return ball_data.root_velocity  # shape: [N, 3]
+    vel = ball_data.root_state_w[2] # root_state_w Root state [pos, quat, lin_vel, ang_vel] in simulation world frame.
+    return vel 
 
 def ball_position(env):
     """
