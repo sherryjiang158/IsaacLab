@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
     from isaaclab.managers import RewardTermCfg
 
-def approach_ball(env, params):
+def approach_ball(env):
     """
     Reward for approaching the ball using an inverse-square law.
     
@@ -19,9 +19,6 @@ def approach_ball(env, params):
     and the ball. It uses a piecewise scaling:
       - The reward is given by (1/(1 + distance^2))^2.
       - If the toe is within a given threshold, the reward is doubled.
-    
-    Parameters in params:
-      - "threshold": distance below which the reward is boosted (default: 0.1 meters)
       
     Explanation:
       - Retrieves the toe position from the kicking_leg_frame.
@@ -46,7 +43,7 @@ def approach_ball(env, params):
     return reward
 
 
-def kick_ball_velocity(env, params):
+def kick_ball_velocity(env):
     """
     Reward for kicking the ball effectively, based on the ball's velocity.
     
@@ -54,10 +51,6 @@ def kick_ball_velocity(env, params):
       - The basic reward is the ball's speed (i.e. the Euclidean norm of its velocity).
       - An additional bonus is added if the speed exceeds a low threshold.
       - A further bonus is added if the speed exceeds a high threshold.
-    
-    Parameters in params:
-      - "low_threshold": speed threshold for a bonus (default: 0.5)
-      - "high_threshold": higher speed threshold for an extra bonus (default: 1.0)
     
     Explanation:
       - Retrieves the ball's velocity vector.
