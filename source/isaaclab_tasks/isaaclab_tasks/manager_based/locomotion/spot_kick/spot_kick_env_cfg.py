@@ -19,7 +19,9 @@ from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sensors import ContactSensorCfg
-from isaaclab.terrains import TerrainImporterCfg
+from isaaclab.sensors import FrameTransformerCfg
+from isaaclab.sensors.frame_transformer import OffsetCfg
+
 
 from isaaclab.utils import configclass
 from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
@@ -27,6 +29,10 @@ from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
 import isaaclab_tasks.manager_based.locomotion.spot_kick.mdp as mdp
 
 from isaaclab_assets.robots.spot import SPOT_CFG  # isort: skip
+from isaaclab.markers.config import FRAME_MARKER_CFG  # isort: skip
+
+FRAME_MARKER_SMALL_CFG = FRAME_MARKER_CFG.copy()
+FRAME_MARKER_SMALL_CFG.markers["frame"].scale = (0.10, 0.10, 0.10)
 
 
 @configclass
@@ -76,173 +82,260 @@ class MySceneCfg(InteractiveSceneCfg):
         # No need to specify because if foot is in the air, there will be no contact force at all.
     )
 
+    ball_frame = FrameTransformerCfg(
+        prim_path="{ENV_REGEX_NS}/Sphere",  # The path where the ball is defined
+        debug_vis=True,  # Enable visualization for debugging
+        visualizer_cfg=FRAME_MARKER_SMALL_CFG.replace(prim_path="/Visuals/BallFrameTransformer"),
+        target_frames=[
+            FrameTransformerCfg.FrameCfg(
+                prim_path="{ENV_REGEX_NS}/Sphere",  # Reference to the ball's geometry
+                name="ball_center", 
+                offset=OffsetCfg(
+                    pos=(0.0, 0.0, 0.0),  # Zero offset means the frame is at the ball's origin
+                    rot=(1.0, 0.0, 0.0, 0.0)  # No rotation offset (identity quaternion)
+                ),
+            ),
+        ],
+    )
+
+    kicking_leg_frame = FrameTransformerCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/fr_foot",  # Base frame for the front right foot
+        debug_vis=True, 
+        visualizer_cfg=FRAME_MARKER_SMALL_CFG.replace(prim_path="/Visuals/KickingLegFrameTransformer"),
+        target_frames=[
+            FrameTransformerCfg.FrameCfg(
+                prim_path="{ENV_REGEX_NS}/Robot/fr_foot",  # Using the foot as the reference
+                name="toe",  
+                offset=OffsetCfg(
+                    pos=(0.0, 0.0, -0.05),  # !!! may need adjest to find best contact point
+                    rot=(1.0, 0.0, 0.0, 0.0)  # !!!!!! Need to further adjust
+                ),
+            ),
+        ],
+    )
+
+
+
 
 # ##
 # # MDP settings
 # ##
 
 
-# @configclass
-# class ActionsCfg:
-#     """Action specifications for the kicking MDP."""
+@configclass
+class ActionsCfg:
+    """Action specifications for the kicking MDP."""
     
-#     joint_pos = mdp.JointPositionActionCfg(
-#         asset_name="robot",
-#         joint_names=[".*"],
-#         scale=0.5,
-#         use_default_offset=True
-#     )
+    joint_pos = mdp.JointPositionActionCfg(
+        asset_name="robot",
+        joint_names=[".*"],
+        scale=0.5,
+        use_default_offset=True
+    )
 
-# @configclass
-# class ObservationsCfg:
-#     """Observation specifications for the kicking MDP."""
+@configclass
+class ObservationsCfg:
+    """Observation specifications for the kicking MDP."""
 
-#     @configclass
-#     class PolicyCfg(ObsGroup):
-#         """Observations for policy group."""
+    @configclass
+    class PolicyCfg(ObsGroup):
+        """Observations for policy group."""
 
-#         # Robot state
-#         base_lin_vel = ObsTerm(
-#             func=mdp.base_lin_vel,
-#             noise=Unoise(n_min=-0.1, n_max=0.1)
-#         )
-#         base_ang_vel = ObsTerm(
-#             func=mdp.base_ang_vel,
-#             noise=Unoise(n_min=-0.2, n_max=0.2)
-#         )
-#         projected_gravity = ObsTerm(
-#             func=mdp.projected_gravity,
-#             noise=Unoise(n_min=-0.05, n_max=0.05)
-#         )
-#         joint_pos = ObsTerm(
-#             func=mdp.joint_pos_rel,
-#             noise=Unoise(n_min=-0.01, n_max=0.01)
-#         )
-#         joint_vel = ObsTerm(
-#             func=mdp.joint_vel_rel,
-#             noise=Unoise(n_min=-1.5, n_max=1.5)
-#         )
+        # Robot state
+        # Three terms that may be useful for keeping the balance
         
-#         # Ball state
-#         ball_relative_pos = ObsTerm(
-#             func=mdp.ball_relative_position,
-#             params={"asset_cfg": SceneEntityCfg("ball")},
-#             noise=Unoise(n_min=-0.05, n_max=0.05)
-#         )
-#         ball_velocity = ObsTerm(
-#             func=mdp.ball_velocity,
-#             params={"asset_cfg": SceneEntityCfg("ball")},
-#             noise=Unoise(n_min=-0.1, n_max=0.1)
-#         )
+        base_lin_vel = ObsTerm(
+            func=mdp.base_lin_vel,
+            noise=Unoise(n_min=-0.1, n_max=0.1)
+        )
+        base_ang_vel = ObsTerm(
+            func=mdp.base_ang_vel,
+            noise=Unoise(n_min=-0.2, n_max=0.2)
+        )
+        projected_gravity = ObsTerm(
+            func=mdp.projected_gravity,
+            noise=Unoise(n_min=-0.05, n_max=0.05)
+        )
+
+        joint_pos = ObsTerm(
+            func=mdp.joint_pos_rel,
+            noise=Unoise(n_min=-0.01, n_max=0.01)
+        )
+        joint_vel = ObsTerm(
+            func=mdp.joint_vel_rel,
+            noise=Unoise(n_min=-1.5, n_max=1.5)
+        )
         
-#         # Last action
-#         actions = ObsTerm(func=mdp.last_action)
+        # Ball state
+        ball_relative_pos = ObsTerm(
+            func=mdp.ball_relative_position,
+            params={"asset_cfg": SceneEntityCfg("ball")},
+            noise=Unoise(n_min=-0.05, n_max=0.05)
+        )
+        ball_velocity = ObsTerm(
+            func=mdp.ball_velocity,
+            params={"asset_cfg": SceneEntityCfg("ball")},
+            noise=Unoise(n_min=-0.1, n_max=0.1)
+        )
 
-#         def __post_init__(self):
-#             self.enable_corruption = True
-#             self.concatenate_terms = True
+        # Leg to Ball Distance
+        rel_ball_leg_distance = ObsTerm(func=mdp.rel_ball_leg_distance)
+        
+        # Last action
+        actions = ObsTerm(func=mdp.last_action)
 
-#     policy: PolicyCfg = PolicyCfg()
+        def __post_init__(self):
+            self.enable_corruption = True
+            self.concatenate_terms = True
 
-# @configclass
-# class EventCfg:
-#     """Configuration for events."""
+    policy: PolicyCfg = PolicyCfg()
 
-#     # Reset events
-#     reset_robot_joints = EventTerm(
-#         func=mdp.reset_joints_around_default,
-#         mode="reset",
-#         params={
-#             "position_range": (-0.2, 0.2),
-#             "velocity_range": (-0.5, 0.5),
-#             "asset_cfg": SceneEntityCfg("robot"),
-#         },
-#     )
+@configclass
+class EventCfg:
+    """Configuration for events."""
 
-#     reset_ball = EventTerm(
-#         func=mdp.reset_ball_position,
-#         mode="reset",
-#         params={
-#             "asset_cfg": SceneEntityCfg("ball"),
-#             "position_range": {"x": (0.1, 0.3), "y": (-0.1, 0.1)},
-#         },
-#     )
+    # Randomize the ball's physical material properties (e.g., friction and bounciness)
+    ball_physics_material = EventTerm(
+        func=mdp.randomize_rigid_body_material,
+        mode="startup",
+        params={
+            "asset_cfg": SceneEntityCfg("ball", body_names=".*"),
+            "static_friction_range": (0.1, 0.3),
+            "dynamic_friction_range": (0.1, 0.3),
+            "restitution_range": (0.8, 1.0),
+            "num_buckets": 16,
+        },
+    )
 
-# @configclass
-# class RewardsCfg:
-#     """Reward terms for the kicking MDP."""
+    # Randomize the ball's starting position for additional variability
+    randomize_ball_position = EventTerm(
+        func=mdp.randomize_ball_position,
+        mode="reset",
+        params={
+            "position_range": ((-0.1, 0.1), (-0.1, 0.1), (0.0, 0.0)), # !!!! May need to adjust based on code running situation
+        },
+    )
 
-#     # Kicking rewards
-#     ball_forward_velocity = RewTerm(
-#         func=mdp.ball_forward_velocity_reward,
-#         weight=2.0,
-#         params={"asset_cfg": SceneEntityCfg("ball")}
-#     )
+    # Reset events
+
+    # Reset the entire scene to the default state at the beginning of each episode
+    reset_all = EventTerm(
+        func=mdp.reset_scene_to_default,
+        mode="reset",
+    )
+
+    # Reset the robot's joints with a small random offset 
+    # to avoid always starting at exactly the same configuration
+    # so that we have better robustness
+
+    reset_robot_joints = EventTerm(
+        func=mdp.reset_joints_around_default,
+        mode="reset",
+        params={
+            "position_range": (-0.1, 0.1),
+            "velocity_range": (-0.0, 0.0),
+            "asset_cfg": SceneEntityCfg("robot"),
+        },
+    )
+
+    # reset_ball = EventTerm(
+    #     func=mdp.reset_ball_position,
+    #     mode="reset",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("ball"),
+    #         "position_range": {"x": (0.1, 0.3), "y": (-0.1, 0.1)},
+    #     },
+    # )
+
     
-#     support_feet_stability = RewTerm(
-#         func=mdp.support_feet_stability,
-#         weight=1.0,
-#         params={
-#             "asset_cfg": SceneEntityCfg("robot"),
-#             "sensor_cfg": SceneEntityCfg("contact_forces"),
-#         }
-#     )
+@configclass
+class RewardsCfg:
+    """Reward terms for the kicking MDP."""
+
+    # 1. Approach the ball: 
+    # Encourage the kicking leg's toe to get close to the ball.
+    approach_ball = RewTerm(
+        func=mdp.approach_ball,
+        weight=3.0,
+        params={"threshold": 0.1}  # A distance threshold within which the reward starts to decrease
+    )
     
-#     # Penalties
-#     joint_acceleration = RewTerm(
-#         func=mdp.joint_acceleration_penalty,
-#         weight=-0.1,
-#         params={"asset_cfg": SceneEntityCfg("robot")}
-#     )
+    # # 2. Alignment of kicking leg: Reward for aligning the kicking leg (toe) properly with the ball.
+    # align_kicking_leg = RewTerm(
+    #     func=mdp.align_kicking_leg,
+    #     weight=0.5
+    # )
     
-#     base_orientation = RewTerm(
-#         func=mdp.base_orientation_penalty,
-#         weight=-1.0,
-#         params={"asset_cfg": SceneEntityCfg("robot")}
-#     )
+    # 3. Kick impact: Reward for transferring momentum to the ball 
+    # (measured by ball velocity post-impact).
+    kick_ball_velocity = RewTerm(
+        func=mdp.kick_ball_velocity,
+        weight=5.0
+    )
+    
+    # Let's not work on this yet... right now, just focus on get the ball rolling.
+    # Target bonus reward if the ball reaches a desired area.
+    # target_ball_bonus = RewTerm(
+    #     func=mdp.target_ball_bonus,
+    #     weight=7.5,
+    #     params={"target_pos": (1.0, 0.0, 0.0), "tolerance": 0.2}
+    # )
+    
+    # 4. Penalize rapid changes in actions to promote smoother control. (smaller)
+    action_rate_l2 = RewTerm(
+        func=mdp.action_rate_l2,
+        weight=-1e-3
+    )
+    
+    # 5. Penalize excessive joint velocities to ensure stable and controlled motion. (smaller)
+    joint_vel = RewTerm(
+        func=mdp.joint_vel_l2,
+        weight=-1e-4
+    )
+    
+    # Penalties
 
-#     support_feet_ground_penalty = RewTerm(
-#         func=mdp.support_feet_leave_ground_penalty,
-#         weight=5.0,  # High weight to strongly discourage lifting support feet
-#         params={
-#             "asset_cfg": SceneEntityCfg("robot"),
-#             "sensor_cfg": SceneEntityCfg("contact_forces"),
-#             "penalty_scale": 5.0
-#         }
-#     )
+    # Penalizes deviations in the robot's base orientation.
+    base_orientation = RewTerm(
+        func=mdp.base_orientation_penalty,
+        weight=-1.0,
+        params={"asset_cfg": SceneEntityCfg("robot")}
+    )
 
-# @configclass
-# class TerminationsCfg:
-#     """Termination terms for the MDP."""
+    support_feet_ground_penalty = RewTerm(
+        func=mdp.support_feet_leave_ground_penalty,
+        weight=5.0,  # High weight to strongly discourage lifting support feet
+        params={
+            "asset_cfg": SceneEntityCfg("robot"),
+            "sensor_cfg": SceneEntityCfg("contact_forces_support"),
+        }
+    )
 
-#     time_out = DoneTerm(func=mdp.time_out, time_out=True)
-#     robot_fall = DoneTerm(
-#         func=mdp.robot_fall,
-#         params={"asset_cfg": SceneEntityCfg("robot")}
-#     )
-#     successful_kick = DoneTerm(
-#         func=mdp.successful_kick,
-#         params={
-#             "asset_cfg": SceneEntityCfg("ball"),
-#             "min_velocity": 1.0
-#         }
-#     )
+@configclass
+class TerminationsCfg:
+    """Termination terms for the MDP."""
+
+    time_out = DoneTerm(func=mdp.time_out, time_out=True)
+    # robot_fall = DoneTerm(
+    #     func=mdp.robot_fall,
+    #     params={"asset_cfg": SceneEntityCfg("robot")}
+    # )
 
 @configclass
 class SpotKickEnvCfg(ManagerBasedRLEnvCfg):
     """Configuration for the locomotion kicking environment."""
 
     # Scene settings
-    scene: MySceneCfg = MySceneCfg(num_envs=4096, env_spacing=2.5)
+    scene: MySceneCfg = MySceneCfg(num_envs=1, env_spacing=2.5)
     
-    # # Basic settings
-    # observations: ObservationsCfg = ObservationsCfg()
-    # actions: ActionsCfg = ActionsCfg()
+    # Basic settings
+    observations: ObservationsCfg = ObservationsCfg()
+    actions: ActionsCfg = ActionsCfg()
     
-    # # MDP settings
-    # rewards: RewardsCfg = RewardsCfg()
-    # terminations: TerminationsCfg = TerminationsCfg()
-    # events: EventCfg = EventCfg()
+    # MDP settings
+    rewards: RewardsCfg = RewardsCfg()
+    terminations: TerminationsCfg = TerminationsCfg()
+    events: EventCfg = EventCfg()
 
     def __post_init__(self):
         # post init of parent
@@ -251,18 +344,18 @@ class SpotKickEnvCfg(ManagerBasedRLEnvCfg):
         self.scene.num_envs = 50
         self.scene.env_spacing = 2.5
     #     """Post initialization."""
-    #     # General settings
-    #     self.decimation = 4
-    #     self.episode_length_s = 4.0  # Shorter episodes for kicking
+        # General settings
+        self.decimation = 4
+        self.episode_length_s = 4.0  # Shorter episodes for kicking
         
-    #     # Simulation settings
-    #     self.sim.dt = 0.005
-    #     self.sim.render_interval = self.decimation
-    #     self.sim.disable_contact_processing = False
+        # Simulation settings
+        self.sim.dt = 0.005
+        self.sim.render_interval = self.decimation
+        self.sim.disable_contact_processing = False
         
-    #     # Update sensor periods
-    #     if self.scene.contact_forces is not None:
-    #         self.scene.contact_forces.update_period = self.sim.dt
+        # Update sensor periods
+        if self.scene.contact_forces is not None:
+            self.scene.contact_forces.update_period = self.sim.dt
 
 
 class SpotKickEnvCfg_PLAY(SpotKickEnvCfg):
@@ -275,4 +368,4 @@ class SpotKickEnvCfg_PLAY(SpotKickEnvCfg):
         self.scene.env_spacing = 2.5
 
         # disable randomization for play
-        #self.observations.policy.enable_corruption = False
+        self.observations.policy.enable_corruption = False
