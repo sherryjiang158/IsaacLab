@@ -167,8 +167,8 @@ class ObservationsCfg:
         )
         
         # Ball state
-        ball_relative_pos = ObsTerm(
-            func=mdp.ball_relative_position,
+        ball_pos = ObsTerm(
+            func=mdp.ball_position,
             params={"asset_cfg": SceneEntityCfg("ball")},
             noise=Unoise(n_min=-0.05, n_max=0.05)
         )
@@ -179,7 +179,7 @@ class ObservationsCfg:
         )
 
         # Leg to Ball Distance
-        rel_ball_leg_distance = ObsTerm(func=mdp.rel_ball_leg_distance)
+        rel_ball_leg_distance = ObsTerm(func=mdp.rel_ball_leg_position)
         
         # Last action
         actions = ObsTerm(func=mdp.last_action)
