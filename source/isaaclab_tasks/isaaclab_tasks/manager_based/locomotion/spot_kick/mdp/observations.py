@@ -25,14 +25,14 @@ def rel_ball_leg_position(env: ManagerBasedRLEnv) -> torch.Tensor:
     # [# envs, which target frame, : all coordinates]
     return ball_data.root_pos_w - leg_tf_data.target_pos_w[..., 0, :]
 
-def ball_velocity(env, params):
+def ball_velocity(env):
     """
     Returns the ball's velocity.
     """
     ball_data = env.scene["ball"].data
     return ball_data.velocity  # shape: [N, 3]
 
-def ball_position(env, params):
+def ball_position(env):
     """
     Returns the ball's position.
     

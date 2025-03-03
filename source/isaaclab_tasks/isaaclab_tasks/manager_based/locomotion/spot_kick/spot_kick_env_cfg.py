@@ -189,12 +189,10 @@ class ObservationsCfg:
         # Ball state
         ball_pos = ObsTerm(
             func=mdp.ball_position,
-            params={"asset_cfg": SceneEntityCfg("ball")},
             noise=Unoise(n_min=-0.05, n_max=0.05)
         )
         ball_velocity = ObsTerm(
             func=mdp.ball_velocity,
-            params={"asset_cfg": SceneEntityCfg("ball")},
             noise=Unoise(n_min=-0.1, n_max=0.1)
         )
 
