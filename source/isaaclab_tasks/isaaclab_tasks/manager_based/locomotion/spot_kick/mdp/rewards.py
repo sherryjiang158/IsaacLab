@@ -30,7 +30,7 @@ def approach_ball(env, params):
       - Applies the inverse-square law and squares it for sharper decay.
       - Uses torch.where to double the reward when within the threshold.
     """
-    threshold = params.get("threshold", 0.1)
+    threshold = 0.1
     # Get the toe's world position (assumes shape [N, 3])
     toe_pos = env.scene["kicking_leg_frame"].data.target_pos_w[..., 0, :]
     # Get the ball's world position (assumed to be in root_pos_w)
@@ -69,8 +69,8 @@ def kick_ball_velocity(env, params):
     ball_vel = ball_data.velocity  # assumed shape [N, 3]
     speed = torch.norm(ball_vel, dim=-1)
     
-    low_threshold = params.get("low_threshold", 0.5) # we can config this differently if we want to
-    high_threshold = params.get("high_threshold", 1.0)
+    low_threshold = 0.5 # we can config this differently if we want to
+    high_threshold = 1.0
     
     # Bonus of 0.5 if the ball speed is above low_threshold,
     # additional bonus of 0.5 if above high_threshold.
@@ -80,38 +80,38 @@ def kick_ball_velocity(env, params):
     return speed + bonus_low + bonus_high
 
 
-def action_rate_l2(env, params):
-    """
-    Penalizes rapid changes in actions (L2 norm of the difference between current and last actions).
+# def action_rate_l2(env, params):
+#     """
+#     Penalizes rapid changes in actions (L2 norm of the difference between current and last actions).
     
-    Explanation:
-      - Assumes env.current_action and env.last_action are tensors of shape [N, action_dim].
-      - Computes the squared L2 norm of their difference.
-      - Returns a negative penalty value (so larger changes yield larger negative rewards).
-    """
-    current_action = env.current_action  # shape: [N, action_dim]
-    last_action = env.last_action          # shape: [N, action_dim]
-    diff = current_action - last_action
-    penalty = torch.norm(diff, dim=-1) ** 2
-    return -penalty
+#     Explanation:
+#       - Assumes env.current_action and env.last_action are tensors of shape [N, action_dim].
+#       - Computes the squared L2 norm of their difference.
+#       - Returns a negative penalty value (so larger changes yield larger negative rewards).
+#     """
+#     current_action = env.current_action  # shape: [N, action_dim]
+#     last_action = env.last_action          # shape: [N, action_dim]
+#     diff = current_action - last_action
+#     penalty = torch.norm(diff, dim=-1) ** 2
+#     return -penalty
 
 
-def joint_vel_l2(env, params):
-    """
-    Penalizes high joint velocities.
+# def joint_vel_l2(env, params):
+#     """
+#     Penalizes high joint velocities.
     
-    Explanation:
-      - Retrieves the robot's joint velocities from its data (assumed shape [N, num_joints]).
-      - Computes the squared L2 norm across joints.
-      - Returns a negative penalty to discourage unnecessarily fast or erratic motions.
-    """
-    robot_data = env.scene["robot"].data
-    joint_vel = robot_data.joint_vel  # shape: [N, num_joints]
-    penalty = torch.norm(joint_vel, dim=-1) ** 2
-    return -penalty
+#     Explanation:
+#       - Retrieves the robot's joint velocities from its data (assumed shape [N, num_joints]).
+#       - Computes the squared L2 norm across joints.
+#       - Returns a negative penalty to discourage unnecessarily fast or erratic motions.
+#     """
+#     robot_data = env.scene["robot"].data
+#     joint_vel = robot_data.joint_vel  # shape: [N, num_joints]
+#     penalty = torch.norm(joint_vel, dim=-1) ** 2
+#     return -penalty
 
 
-def base_orientation_penalty(env, params):
+def base_orientation_penalty(env):
     """
     Penalizes deviations of the robot's base orientation from the desired upright orientation.
     
@@ -150,7 +150,7 @@ def base_orientation_penalty(env, params):
 #     penalty = 1.0 - contact_fraction  # 0 if all feet are in contact; 1 if none.
 #     return -penalty
 
-def support_feet_leave_ground_penalty(env, params):
+def support_feet_leave_ground_penalty(env):
     """
     Penalizes when support feet lose contact with the ground.
     

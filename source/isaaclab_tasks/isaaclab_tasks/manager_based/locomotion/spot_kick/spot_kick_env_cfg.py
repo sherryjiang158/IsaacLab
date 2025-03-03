@@ -275,7 +275,6 @@ class RewardsCfg:
     approach_ball = RewTerm(
         func=mdp.approach_ball,
         weight=3.0,
-        params={"threshold": 0.1}  # A distance threshold within which the reward starts to decrease
     )
     
     # # 2. Alignment of kicking leg: Reward for aligning the kicking leg (toe) properly with the ball.
@@ -317,16 +316,15 @@ class RewardsCfg:
     base_orientation = RewTerm(
         func=mdp.base_orientation_penalty,
         weight=-1.0,
-        params={"asset_cfg": SceneEntityCfg("robot")}
     )
 
     support_feet_ground_penalty = RewTerm(
         func=mdp.support_feet_leave_ground_penalty,
         weight=5.0,  # High weight to strongly discourage lifting support feet
-        params={
-            "asset_cfg": SceneEntityCfg("robot"),
-            # "sensor_cfg": SceneEntityCfg("contact_forces_support"),
-        }
+        # params={
+        #     # "asset_cfg": SceneEntityCfg("robot"),
+        #     # "sensor_cfg": SceneEntityCfg("contact_forces_support"),
+        # }
     )
 
 @configclass
