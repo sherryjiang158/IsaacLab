@@ -132,20 +132,62 @@ def base_orientation_penalty(env, params):
     return -penalty
 
 
+# def support_feet_leave_ground_penalty(env, params):
+#     """
+#     Penalizes when the support feet lose contact with the ground.
+    
+#     Explanation:
+#       - Uses contact sensor data from support feet (e.g., defined under "contact_forces_support").
+#       - Checks if each foot's measured force exceeds a small threshold, indicating contact.
+#       - Computes the fraction of support feet in contact.
+#       - Returns a negative penalty that increases as fewer feet are in contact.
+#     """
+#     sensor_data = env.scene["contact_forces_support"].data
+#     forces = sensor_data.force  # assumed shape: [N, num_feet]
+#     threshold = 1e-5  # threshold to consider a foot in contact, !!!! we may need to adjust this 
+#     contact = (forces > threshold).float()  # 1 if in contact, 0 otherwise
+#     contact_fraction = contact.sum(dim=-1) / forces.shape[-1]
+#     penalty = 1.0 - contact_fraction  # 0 if all feet are in contact; 1 if none.
+#     return -penalty
+
 def support_feet_leave_ground_penalty(env, params):
     """
-    Penalizes when the support feet lose contact with the ground.
+    Penalizes when support feet lose contact with the ground.
     
-    Explanation:
-      - Uses contact sensor data from support feet (e.g., defined under "contact_forces_support").
-      - Checks if each foot's measured force exceeds a small threshold, indicating contact.
-      - Computes the fraction of support feet in contact.
-      - Returns a negative penalty that increases as fewer feet are in contact.
+    This version uses separate contact sensor data for each support foot:
+      - "contact_forces_fl" for the front-left foot,
+      - "contact_forces_hl" for the hind-left foot, and
+      - "contact_forces_hr" for the hind-right foot.
+      
+    For each sensor, if any of its measured force values exceeds a small threshold, 
+    that foot is considered to be in contact (1), otherwise not (0).
+    
+    The penalty is computed as:
+        penalty = - (total_feet - number_of_feet_in_contact)
+    so that if all feet are in contact the penalty is 0, and if one or more are missing, 
+    a negative penalty is applied.
     """
-    sensor_data = env.scene["contact_forces_support"].data
-    forces = sensor_data.force  # assumed shape: [N, num_feet]
-    threshold = 1e-5  # threshold to consider a foot in contact, !!!! we may need to adjust this 
-    contact = (forces > threshold).float()  # 1 if in contact, 0 otherwise
-    contact_fraction = contact.sum(dim=-1) / forces.shape[-1]
-    penalty = 1.0 - contact_fraction  # 0 if all feet are in contact; 1 if none.
-    return -penalty
+    sensor_names = ["contact_forces_fl", "contact_forces_hl", "contact_forces_hr"]
+    threshold = 1e-3  # Force threshold to consider a foot in contact
+    contacts = []
+    
+    for sensor_name in sensor_names:
+        sensor_data = env.scene[sensor_name].data
+        forces = sensor_data.force  # Expected shape: [N, ...]
+        # If the sensor returns a multi-dimensional tensor, check if any force exceeds the threshold.
+        if forces.ndim > 1:
+            contact_indicator = (forces > threshold).any(dim=-1).float()
+        else:
+            contact_indicator = (forces > threshold).float()
+        contacts.append(contact_indicator)
+    
+    # Stack contact indicators; shape: [N, num_sensors]
+    contacts_tensor = torch.stack(contacts, dim=-1)
+    # Count the number of feet in contact for each environment
+    num_in_contact = contacts_tensor.sum(dim=-1)
+    total_feet = float(len(sensor_names))
+    missing_feet = total_feet - num_in_contact
+    # The penalty is the negative number of missing feet
+    penalty = -missing_feet
+    return penalty
+

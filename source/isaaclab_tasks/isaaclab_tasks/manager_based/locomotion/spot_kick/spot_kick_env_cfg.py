@@ -69,18 +69,38 @@ class MySceneCfg(InteractiveSceneCfg):
         filter_prim_paths_expr=["{ENV_REGEX_NS}/Sphere"],  # Only detect ball contact
     )
 
-    contact_forces_support = ContactSensorCfg(
-        prim_path=[
-            "{ENV_REGEX_NS}/Robot/fl_foot",
-            "{ENV_REGEX_NS}/Robot/hl_foot",
-            "{ENV_REGEX_NS}/Robot/hr_foot"
-        ],  # Support feet
+    # contact_forces_support = ContactSensorCfg(
+    #     prim_path=[
+    #         "{ENV_REGEX_NS}/Robot/fl_foot",
+    #         "{ENV_REGEX_NS}/Robot/hl_foot",
+    #         "{ENV_REGEX_NS}/Robot/hr_foot"
+    #     ],  # Support feet
+    #     update_period=0.0,
+    #     history_length=3,
+    #     debug_vis=True,
+    #     # filter_prim_paths_expr=["{ENV_REGEX_NS}/Ground"],  
+    #     # No need to specify because if foot is in the air, there will be no contact force at all.
+    # )
+    contact_forces_fl = ContactSensorCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/fl_foot",
         update_period=0.0,
         history_length=3,
         debug_vis=True,
-        # filter_prim_paths_expr=["{ENV_REGEX_NS}/Ground"],  
-        # No need to specify because if foot is in the air, there will be no contact force at all.
+        # optionally add filter_prim_paths_expr if needed
     )
+    contact_forces_hr = ContactSensorCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/hr_foot",
+        update_period=0.0,
+        history_length=3,
+        debug_vis=True,
+    )
+    contact_forces_hl = ContactSensorCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/hl_foot",
+        update_period=0.0,
+        history_length=3,
+        debug_vis=True,
+    )
+
 
     ball_frame = FrameTransformerCfg(
         prim_path="{ENV_REGEX_NS}/Sphere",  # The path where the ball is defined
@@ -307,7 +327,7 @@ class RewardsCfg:
         weight=5.0,  # High weight to strongly discourage lifting support feet
         params={
             "asset_cfg": SceneEntityCfg("robot"),
-            "sensor_cfg": SceneEntityCfg("contact_forces_support"),
+            # "sensor_cfg": SceneEntityCfg("contact_forces_support"),
         }
     )
 
@@ -354,8 +374,14 @@ class SpotKickEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.disable_contact_processing = False
         
         # Update sensor periods
-        if self.scene.contact_forces_support is not None:
-            self.scene.contact_forces_support.update_period = self.sim.dt
+        # if self.scene.contact_forces_support is not None:
+        #     self.scene.contact_forces_support.update_period = self.sim.dt
+        if self.scene.contact_forces_fl is not None:
+            self.scene.contact_forces_fl.update_period = self.sim.dt
+        if self.scene.contact_forces_hl is not None:
+            self.scene.contact_forces_hl.update_period = self.sim.dt        
+        if self.scene.contact_forces_hr is not None:
+            self.scene.contact_forces_hr.update_period = self.sim.dt
 
 
 class SpotKickEnvCfg_PLAY(SpotKickEnvCfg):
