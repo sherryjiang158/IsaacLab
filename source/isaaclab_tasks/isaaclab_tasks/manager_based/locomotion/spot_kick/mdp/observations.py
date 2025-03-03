@@ -28,9 +28,11 @@ def rel_ball_leg_position(env: ManagerBasedRLEnv) -> torch.Tensor:
 def ball_velocity(env):
     """
     Returns the ball's velocity.
+    Since it's rigid object. Maybe we can try 
+    root_velocity – Root center of mass velocities in simulation world frame. Shape is (len(env_ids), 6).
     """
     ball_data = env.scene["ball"].data
-    return ball_data.velocity  # shape: [N, 3]
+    return ball_data.root_velocity  # shape: [N, 3]
 
 def ball_position(env):
     """
