@@ -32,6 +32,7 @@ def ball_velocity(env):
     https://isaac-sim.github.io/IsaacLab/main/source/api/lab/isaaclab.assets.html#isaaclab.assets.RigidObjectData
     """
     ball_data = env.scene["ball"].data
+    print(ball_data.root_state_w)
     vel = ball_data.root_state_w[2] # root_state_w Root state [pos, quat, lin_vel, ang_vel] in simulation world frame.
     return vel 
 
