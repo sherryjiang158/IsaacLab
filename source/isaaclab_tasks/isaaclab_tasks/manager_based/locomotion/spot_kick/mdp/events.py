@@ -57,53 +57,53 @@ def reset_joints_around_default(
     # set into the physics simulation
     asset.write_joint_state_to_sim(joint_pos, joint_vel, env_ids=env_ids)
 
-def randomize_ball_position(env, position_range: tuple = None) -> None:
-    """
-    Positions the ball next to the robot's kicking foot (front right) with optional random perturbations.
+# def randomize_ball_position(env, position_range: tuple = None) -> None:
+#     """
+#     Positions the ball next to the robot's kicking foot (front right) with optional random perturbations.
     
-    Instead of relying on a stored default position, this function:
-      1. Retrieves the toe position from the kicking leg frame.
-      2. Adds a base offset to place the ball next to the foot.
-      3. Optionally adds random offsets (if position_range is provided) to introduce variability.
+#     Instead of relying on a stored default position, this function:
+#       1. Retrieves the toe position from the kicking leg frame.
+#       2. Adds a base offset to place the ball next to the foot.
+#       3. Optionally adds random offsets (if position_range is provided) to introduce variability.
     
-    Parameters:
-      env: The simulation environment.
-      position_range: Optional tuple of three tuples, one for each axis:
-          ((min_offset_x, max_offset_x), (min_offset_y, max_offset_y), (min_offset_z, max_offset_z)).
-          If provided, these random offsets are added to the base offset.
-          If not provided, no extra randomization is applied.
-    """
-    # Get the toe's world position from the kicking leg frame (shape: [N, 3])
-    toe_pos = env.scene["kicking_leg_frame"].data.target_pos_w[..., 0, :]
+#     Parameters:
+#       env: The simulation environment.
+#       position_range: Optional tuple of three tuples, one for each axis:
+#           ((min_offset_x, max_offset_x), (min_offset_y, max_offset_y), (min_offset_z, max_offset_z)).
+#           If provided, these random offsets are added to the base offset.
+#           If not provided, no extra randomization is applied.
+#     """
+#     # Get the toe's world position from the kicking leg frame (shape: [N, 3])
+#     toe_pos = env.scene["kicking_leg_frame"].data.target_pos_w[..., 0, :]
     
-    # Define a base offset (e.g., 0.1 m in front of the toe)
-    base_offset = torch.tensor([0.1, 0.0, 0.0], device=toe_pos.device).unsqueeze(0)  # shape [1, 3]
+#     # Define a base offset (e.g., 0.1 m in front of the toe)
+#     base_offset = torch.tensor([0.1, 0.0, 0.0], device=toe_pos.device).unsqueeze(0)  # shape [1, 3]
 
-    position_range = ((-0.1, 0.1), (-0.1, 0.1), (0.0, 0.0))
+#     position_range = ((-0.1, 0.1), (-0.1, 0.1), (0.0, 0.0))
     
-    # Determine random offset if position_range is provided.
-    if position_range is not None:
-        min_offsets = torch.tensor(
-            [position_range[0][0], position_range[1][0], position_range[2][0]], device=toe_pos.device
-        )
-        max_offsets = torch.tensor(
-            [position_range[0][1], position_range[1][1], position_range[2][1]], device=toe_pos.device
-        )
-        # Sample uniformly for each environment: shape [N, 3]
-        random_offsets = torch.rand(toe_pos.shape, device=toe_pos.device) * (max_offsets - min_offsets) + min_offsets
-    else:
-        random_offsets = torch.zeros_like(toe_pos)
+#     # Determine random offset if position_range is provided.
+#     if position_range is not None:
+#         min_offsets = torch.tensor(
+#             [position_range[0][0], position_range[1][0], position_range[2][0]], device=toe_pos.device
+#         )
+#         max_offsets = torch.tensor(
+#             [position_range[0][1], position_range[1][1], position_range[2][1]], device=toe_pos.device
+#         )
+#         # Sample uniformly for each environment: shape [N, 3]
+#         random_offsets = torch.rand(toe_pos.shape, device=toe_pos.device) * (max_offsets - min_offsets) + min_offsets
+#     else:
+#         random_offsets = torch.zeros_like(toe_pos)
     
-    # Compute the new position for the ball.
-    new_pos = toe_pos + base_offset + random_offsets  # shape [N, 3]
+#     # Compute the new position for the ball.
+#     new_pos = toe_pos + base_offset + random_offsets  # shape [N, 3]
     
-    # Set the ball's velocity to zero.
-    new_vel = torch.zeros_like(new_pos)
+#     # Set the ball's velocity to zero.
+#     new_vel = torch.zeros_like(new_pos)
     
-    # Write the new state into the simulation for the ball asset.
-    # This call now applies to all environments.
-    env.scene["ball"].write_root_pose_to_sim(new_pos)
-    env.scene["ball"].write_root_velocity_to_sim(new_vel)
+#     # Write the new state into the simulation for the ball asset.
+#     # This call now applies to all environments.
+#     env.scene["ball"].write_root_pose_to_sim(new_pos)
+#     env.scene["ball"].write_root_velocity_to_sim(new_vel)
 
 def randomize_ball_position(env, position_range: tuple = None) -> None:
     """

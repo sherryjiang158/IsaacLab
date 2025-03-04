@@ -32,7 +32,7 @@ def ball_velocity(env):
     https://isaac-sim.github.io/IsaacLab/main/source/api/lab/isaaclab.assets.html#isaaclab.assets.RigidObjectData
     """
     ball_data = env.scene["ball"].data
-    print("print: root_state_w", ball_data.root_state_w)
+    # print("print: root_state_w", ball_data.root_state_w)
     # root_state_w Root state [pos, quat, lin_vel, ang_vel] in simulation world frame.
     # but the tensor is flattened.
     """

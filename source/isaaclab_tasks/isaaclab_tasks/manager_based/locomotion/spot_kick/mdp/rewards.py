@@ -59,7 +59,8 @@ def kick_ball_velocity(env):
         encouraging the agent to produce a powerful kick.
     """
     ball_data = env.scene["ball"].data
-    ball_vel = ball_data.velocity  # assumed shape [N, 3]
+    
+    ball_vel = ball_data.root_state_w[:, 7:10]  # assumed shape [N, 3]
     speed = torch.norm(ball_vel, dim=-1)
     
     low_threshold = 0.5 # we can config this differently if we want to
