@@ -173,12 +173,12 @@ def support_feet_leave_ground_penalty(env):
     a negative penalty is applied.
     """
     sensor_names = ["contact_forces_fl", "contact_forces_hl", "contact_forces_hr"]
-    threshold = 1e-3  # Force threshold to consider a foot in contact
+    threshold = 1e-6  # Force threshold to consider a foot in contact
     contacts = []
     
     for sensor_name in sensor_names:
         sensor_data = env.scene[sensor_name].data
-        forces = sensor_data.force  # Expected shape: [N, ...]
+        forces = sensor_data.net_forces_w  # Expected shape: [N, ...]
         # If the sensor returns a multi-dimensional tensor, check if any force exceeds the threshold.
         if forces.ndim > 1:
             contact_indicator = (forces > threshold).any(dim=-1).float()
