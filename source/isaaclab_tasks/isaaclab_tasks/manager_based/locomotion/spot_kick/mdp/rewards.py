@@ -126,6 +126,17 @@ def base_orientation_penalty(env):
     return -penalty
 
 
+def base_orientation_penalty(env: ManagerBasedRLEnv) -> torch.Tensor:
+    """Penalize non-flat base orientation
+
+    This is computed by penalizing the xy-components of the projected gravity vector.
+    This is adapted from Spot walking example
+    """
+    # extract the used quantities (to enable type-hinting)
+    robot_data = env.scene["robot"].data
+    return torch.linalg.norm((robot_data.projected_gravity_b[:, :2]), dim=1)
+
+
 # def support_feet_leave_ground_penalty(env, params):
 #     """
 #     Penalizes when the support feet lose contact with the ground.
