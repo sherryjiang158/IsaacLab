@@ -117,7 +117,7 @@ def base_orientation_penalty(env):
       - Returns a penalty that increases as the base deviates from upright.
     """
     robot_data = env.scene["robot"].data
-    base_quat = robot_data.base_rot_w  # shape: [N, 4]
+    base_quat = robot_data.root_rot_w  # shape: [N, 4]
     # Desired upright orientation: (0, 0, 0, 1) in quaternion (x, y, z, w) format.
     desired_quat = torch.tensor([0.0, 0.0, 0.0, 1.0], device=base_quat.device).unsqueeze(0)
     # Compute the dot product as a similarity measure (1 means perfect alignment)
