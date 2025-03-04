@@ -102,4 +102,5 @@ def randomize_ball_position(env, position_range: tuple = None) -> None:
     
     # Write the new state into the simulation for the ball asset.
     # This call now applies to all environments.
-    env.scene["ball"].write_state_to_sim(new_pos, new_vel)
+    env.scene["ball"].write_root_pose_to_sim(new_pos)
+    env.scene["ball"].write_root_velocity_to_sim(new_vel)
