@@ -54,4 +54,7 @@ def ball_position(env):
       - For simplicity, we return the ball's world position (root_pos_w) to see if it works????
     """
     ball_data = env.scene["ball"].data
-    return ball_data.root_pos_w  # shape: [N, 3]
+    ball_pos = ball_data.root_pos_w  # shape: [N, 3]
+    print("***** in observation, ball pos is: ", ball_pos)
+
+    return ball_pos
