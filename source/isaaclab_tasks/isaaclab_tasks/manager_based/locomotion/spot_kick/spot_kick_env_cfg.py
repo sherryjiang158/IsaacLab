@@ -330,12 +330,8 @@ class RewardsCfg:
 @configclass
 class TerminationsCfg:
     """Termination terms for the MDP."""
-
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
-    # robot_fall = DoneTerm(
-    #     func=mdp.robot_fall,
-    #     params={"asset_cfg": SceneEntityCfg("robot")}
-    # )
+
 
 @configclass
 class SpotKickEnvCfg(ManagerBasedRLEnvCfg):

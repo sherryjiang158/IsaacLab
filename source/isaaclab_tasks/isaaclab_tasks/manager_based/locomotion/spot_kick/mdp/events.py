@@ -57,47 +57,47 @@ def reset_joints_around_default(
     # set into the physics simulation
     asset.write_joint_state_to_sim(joint_pos, joint_vel, env_ids=env_ids)
 
-def randomize_ball_position(env, env_ids: torch.Tensor, position_range: tuple) -> None:
+def randomize_ball_position(env, position_range: tuple = None) -> None:
     """
-    Randomizes the ball's starting position for variability.
+    Positions the ball next to the robot's kicking foot (front right) with optional random perturbations.
+    
+    Instead of relying on a stored default position, this function:
+      1. Retrieves the toe position from the kicking leg frame.
+      2. Adds a base offset to place the ball next to the foot.
+      3. Optionally adds random offsets (if position_range is provided) to introduce variability.
     
     Parameters:
       env: The simulation environment.
-      env_ids: A tensor of indices for the environments to randomize.
-      position_range: A tuple of three tuples, one for each axis:
-                      ((min_x, max_x), (min_y, max_y), (min_z, max_z))
-                      These values are offsets added to the ball's default position.
-    
-    Explanation:
-      - Retrieves the ball asset from the scene using its name ("ball").
-      - Extracts the default position for the ball from asset.data.default_pos.
-      - Computes per-axis minimum and maximum positions by adding the corresponding offset range.
-      - Samples uniformly between these limits for each environment.
-      - Resets the ball's velocity to zero and writes the new state back into the simulation.
+      position_range: Optional tuple of three tuples, one for each axis:
+          ((min_offset_x, max_offset_x), (min_offset_y, max_offset_y), (min_offset_z, max_offset_z)).
+          If provided, these random offsets are added to the base offset.
+          If not provided, no extra randomization is applied.
     """
-    # Get the ball asset from the environment
-    asset = env.scene["ball"]
+    # Get the toe's world position from the kicking leg frame (shape: [N, 3])
+    toe_pos = env.scene["kicking_leg_frame"].data.target_pos_w[..., 0, :]
     
-    # Assume the ball's default position is stored in asset.data.default_pos (shape [N, 3])
-    default_pos = asset.data.default_pos[env_ids]
+    # Define a base offset (e.g., 0.1 m in front of the toe)
+    base_offset = torch.tensor([0.1, 0.0, 0.0], device=toe_pos.device).unsqueeze(0)  # shape [1, 3]
     
-    # Compute per-axis minimum and maximum positions based on the given offsets.
-    min_x = default_pos[:, 0] + position_range[0][0]
-    max_x = default_pos[:, 0] + position_range[0][1]
-    min_y = default_pos[:, 1] + position_range[1][0]
-    max_y = default_pos[:, 1] + position_range[1][1]
-    min_z = default_pos[:, 2] + position_range[2][0]
-    max_z = default_pos[:, 2] + position_range[2][1]
+    # Determine random offset if position_range is provided.
+    if position_range is not None:
+        min_offsets = torch.tensor(
+            [position_range[0][0], position_range[1][0], position_range[2][0]], device=toe_pos.device
+        )
+        max_offsets = torch.tensor(
+            [position_range[0][1], position_range[1][1], position_range[2][1]], device=toe_pos.device
+        )
+        # Sample uniformly for each environment: shape [N, 3]
+        random_offsets = torch.rand(toe_pos.shape, device=toe_pos.device) * (max_offsets - min_offsets) + min_offsets
+    else:
+        random_offsets = torch.zeros_like(toe_pos)
     
-    # Stack to form tensors of shape [N, 3] for minimum and maximum positions.
-    min_pos = torch.stack([min_x, min_y, min_z], dim=-1)
-    max_pos = torch.stack([max_x, max_y, max_z], dim=-1)
+    # Compute the new position for the ball.
+    new_pos = toe_pos + base_offset + random_offsets  # shape [N, 3]
     
-    # Sample uniformly between these limits. We use the provided sample_uniform helper.
-    new_pos = sample_uniform(min_pos, max_pos, default_pos.shape, default_pos.device)
-    
-    # Set the new velocity to zero.
+    # Set the ball's velocity to zero.
     new_vel = torch.zeros_like(new_pos)
     
     # Write the new state into the simulation for the ball asset.
-    asset.write_state_to_sim(new_pos, new_vel, env_ids=env_ids)
+    # This call now applies to all environments.
+    env.scene["ball"].write_state_to_sim(new_pos, new_vel)
