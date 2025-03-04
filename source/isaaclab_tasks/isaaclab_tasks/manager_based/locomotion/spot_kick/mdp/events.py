@@ -128,7 +128,7 @@ def randomize_ball_position(env, position_range: tuple = None) -> None:
     toe_pos = env.scene["kicking_leg_frame"].data.target_pos_w[..., 0, :]
     
     # Define a base offset, e.g., place the ball 0.1 m in front of the toe.
-    base_offset = torch.tensor([0.1, 0.0, 0.0], device=toe_pos.device).unsqueeze(0)  # shape: [1, 3]
+    base_offset = torch.tensor([-0.1, 0.0, 0.0], device=toe_pos.device).unsqueeze(0)  # shape: [1, 3]
     position_range = ((-0.1, 0.1), (-0.1, 0.1), (0.0, 0.0))
 
     
