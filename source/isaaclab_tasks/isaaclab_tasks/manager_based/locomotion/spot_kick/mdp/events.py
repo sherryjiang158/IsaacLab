@@ -104,3 +104,67 @@ def randomize_ball_position(env, position_range: tuple = None) -> None:
     # This call now applies to all environments.
     env.scene["ball"].write_root_pose_to_sim(new_pos)
     env.scene["ball"].write_root_velocity_to_sim(new_vel)
+
+def randomize_ball_position(env, position_range: tuple = None) -> None:
+    """
+    Positions the ball next to the robot's kicking foot (front right) with optional random perturbations,
+    and sets a default orientation and zero angular velocity.
+
+    This function:
+      1. Retrieves the toe position from the kicking leg frame.
+      2. Adds a base offset to place the ball next to the toe.
+      3. Optionally adds random offsets (if position_range is provided) for variability.
+      4. Sets the ball's orientation (quaternion) to a default value (identity) and resets its velocities.
+
+    Args:
+        env: The simulation environment.
+        position_range: ((min_offset_x, max_offset_x),
+                         (min_offset_y, max_offset_y),
+                         (min_offset_z, max_offset_z)).
+                        These offsets are added to the base offset for randomness.
+                        If None, no extra randomization is applied.
+    """
+    # Retrieve the kicking leg's toe position (shape: [N, 3])
+    toe_pos = env.scene["kicking_leg_frame"].data.target_pos_w[..., 0, :]
+    
+    # Define a base offset, e.g., place the ball 0.1 m in front of the toe.
+    base_offset = torch.tensor([0.1, 0.0, 0.0], device=toe_pos.device).unsqueeze(0)  # shape: [1, 3]
+    
+    # Determine random offset if position_range is provided.
+    if position_range is not None:
+        # position_range: ((min_x, max_x), (min_y, max_y), (min_z, max_z))
+        min_offsets = torch.tensor(
+            [position_range[0][0], position_range[1][0], position_range[2][0]], device=toe_pos.device
+        )
+        max_offsets = torch.tensor(
+            [position_range[0][1], position_range[1][1], position_range[2][1]], device=toe_pos.device
+        )
+        random_offsets = torch.rand(toe_pos.shape, device=toe_pos.device) * (max_offsets - min_offsets) + min_offsets
+    else:
+        random_offsets = torch.zeros_like(toe_pos)
+    
+    # Compute the new ball position.
+    new_pos = toe_pos + base_offset + random_offsets  # shape: [N, 3]
+    
+    # Set the ball's linear velocity to zero.
+    new_lin_vel = torch.zeros_like(new_pos)  # shape: [N, 3]
+    
+    # Set the ball's angular velocity to zero.
+    new_ang_vel = torch.zeros_like(new_pos)  # shape: [N, 3]
+    
+    # Set the ball's orientation (quaternion) to the identity (no rotation).
+    # (w, x, y, z) format.
+    default_quat = torch.tensor([1.0, 0.0, 0.0, 0.0], device=toe_pos.device).unsqueeze(0)  # shape: [1, 4]
+    default_quat = default_quat.expand(new_pos.shape[0], -1)  # shape: [N, 4]
+    
+    # Construct the full state vector for the ball: 
+    # [position (3), quaternion (4), linear velocity (3), angular velocity (3)] => [N, 13]
+    new_state = torch.cat([new_pos, default_quat, new_lin_vel, new_ang_vel], dim=-1)
+    
+    # Write the new state into simulation using the available methods.
+    # The first 7 columns (position and quaternion) form the root pose.
+    # The last 6 columns (linear and angular velocities) form the root velocity.
+    ball_asset = env.scene["ball"]
+    ball_asset.write_root_pose_to_sim(new_state[:, :7])
+    ball_asset.write_root_velocity_to_sim(new_state[:, 7:])
+
