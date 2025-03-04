@@ -377,7 +377,7 @@ class SpotKickEnvCfg(ManagerBasedRLEnvCfg):
             self.scene.contact_forces_hr.update_period = self.sim.dt
         
         # Retrieve the robot's kicking foot position from its frame data.
-        kicking_foot_pos = self.scene.kicking_leg_frame.data.target_pos_w
+        kicking_foot_pos = self.scene["kicking_leg_frame"].data.target_pos_w[..., 0, :]
         
         # Set the ball's initial position relative to that.
         relative_offset = torch.tensor([0.2, 0.0, 0.0])  # for example, 0.1 m in front of the foot.
