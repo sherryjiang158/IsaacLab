@@ -226,14 +226,7 @@ class EventCfg:
         },
     )
 
-    # Randomize the ball's starting position for additional variability
-    randomize_ball_position = EventTerm(
-        func=mdp.randomize_ball_position,
-        mode="reset",
-        # params={
-        #     "position_range": ((-0.1, 0.1), (-0.1, 0.1), (0.0, 0.0)), # !!!! May need to adjust based on code running situation
-        # },
-    )
+   
 
     # Reset events
 
@@ -255,6 +248,14 @@ class EventCfg:
             "velocity_range": (-0.0, 0.0),
             "asset_cfg": SceneEntityCfg("robot"),
         },
+    )
+     # Randomize the ball's starting position for additional variability
+    randomize_ball_position = EventTerm(
+        func=mdp.randomize_ball_position,
+        mode="reset",
+        # params={
+        #     "position_range": ((-0.1, 0.1), (-0.1, 0.1), (0.0, 0.0)), # !!!! May need to adjust based on code running situation
+        # },
     )
 
     # reset_ball = EventTerm(
