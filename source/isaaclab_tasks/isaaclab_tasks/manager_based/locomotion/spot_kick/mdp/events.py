@@ -172,4 +172,6 @@ def randomize_ball_position(env, position_range: tuple = None) -> None:
     ball_asset = env.scene["ball"]
     ball_asset.write_root_pose_to_sim(new_state[:, :7])
     ball_asset.write_root_velocity_to_sim(new_state[:, 7:])
+    print("Updated ball position:", env.scene["ball"].data.root_pos_w)
+
 
