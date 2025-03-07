@@ -36,7 +36,7 @@ def ball_velocity(env):
     # root_state_w Root state [pos, quat, lin_vel, ang_vel] in simulation world frame.
     # but the tensor is flattened.
     """
-    # e.g.[ 1.2500e+00,  0.0000e+00,  3.0000e-02,  1.0000e+00,  0.0000e+00,
+    e.g.[ 1.2500e+00,  0.0000e+00,  3.0000e-02,  1.0000e+00,  0.0000e+00,
           0.0000e+00,  0.0000e+00, -1.4009e-07,  0.0000e+00,  3.8412e-08,
           0.0000e+00,  3.5013e-06,  0.0000e+00],
         [-1.2500e+00,  0.0000e+00,  3.0000e-02,  1.0000e+00,  0.0000e+00,
@@ -55,6 +55,6 @@ def ball_position(env):
     """
     ball_data = env.scene["ball"].data
     ball_pos = ball_data.root_pos_w  # shape: [N, 3]
-    print("***** in observation, ball pos is: ", ball_pos)
+    # print("***** in observation, ball pos is: ", ball_pos)
 
     return ball_pos

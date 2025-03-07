@@ -130,7 +130,7 @@ def randomize_ball_position(env, position_range: tuple = None) -> None:
     # Define a base offset, e.g., place the ball 0.1 m in front of the toe.
     base_offset = torch.tensor([0.2, 0, 0], device=toe_pos.device).unsqueeze(0)  # shape: [1, 3]
     position_range = ((-0.1, 0.1), (-0.1, 0.1), (0.0, 0.0))
-    print("!!!! Randomized ball pos is run. Toe position:", toe_pos)
+    # print("!!!! Randomized ball pos is run. Toe position:", toe_pos)
     
     # Determine random offset if position_range is provided.
     if position_range is not None:
@@ -166,12 +166,12 @@ def randomize_ball_position(env, position_range: tuple = None) -> None:
     # Write the new state into simulation using the available methods.
     # The first 7 columns (position and quaternion) form the root pose.
     # The last 6 columns (linear and angular velocities) form the root velocity.
-    print("Old ball position:", env.scene["ball"].data.root_pos_w)
-    print("New ball position:", new_pos)
+    # print("Old ball position:", env.scene["ball"].data.root_pos_w)
+    # print("New ball position:", new_pos)
 
     ball_asset = env.scene["ball"]
     ball_asset.write_root_pose_to_sim(new_state[:, :7])
     ball_asset.write_root_velocity_to_sim(new_state[:, 7:])
-    print("Updated ball position:", env.scene["ball"].data.root_pos_w)
+    # print("Updated ball position:", env.scene["ball"].data.root_pos_w)
 
 
