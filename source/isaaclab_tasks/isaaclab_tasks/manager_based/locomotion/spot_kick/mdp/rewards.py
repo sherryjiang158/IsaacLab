@@ -156,7 +156,8 @@ def base_orientation_penalty(env: ManagerBasedRLEnv) -> torch.Tensor:
 #     return -penalty
 
 
-##!!!!!!!!!!!! omit this first? Since similar information would be captured by base orientation penalty?
+## omit this first? Since similar information would be captured by base orientation penalty?
+## actually cannot omit that...
 def support_feet_leave_ground_penalty(env):
     """
     Penalizes when support feet lose contact with the ground.
@@ -182,20 +183,20 @@ def support_feet_leave_ground_penalty(env):
         sensor_data = env.scene[sensor_name].data
         forces = sensor_data.net_forces_w  # Expected shape: [N, [[[[1.6198e-05, 8.1023e-05, 6.4741e+01]]]]]
         # If the sensor returns a multi-dimensional tensor, check if any force exceeds the threshold.
-        # if forces.ndim > 1:
-        #     contact_indicator = (forces > threshold).any(dim=-1).float()
-        # else:
-        #     contact_indicator = (forces > threshold).float()
-        # contacts.append(contact_indicator)
+        if forces.ndim > 1:
+            contact_indicator = (forces > threshold).any(dim=-1).float()
+        else:
+            contact_indicator = (forces > threshold).float()
+        contacts.append(contact_indicator)
         print("contact forces", forces)
     
-    # # Stack contact indicators; shape: [N, num_sensors]
-    # contacts_tensor = torch.stack(contacts, dim=-1)
-    # # Count the number of feet in contact for each environment
-    # num_in_contact = contacts_tensor.sum(dim=-1)
-    # total_feet = float(len(sensor_names))
-    # missing_feet = total_feet - num_in_contact
-    # # The penalty is the negative number of missing feet
-    # penalty = -missing_feet
-    return -1
+    # Stack contact indicators; shape: [N, num_sensors]
+    contacts_tensor = torch.stack(contacts, dim=-1)
+    # Count the number of feet in contact for each environment
+    num_in_contact = contacts_tensor.sum(dim=-1)
+    total_feet = float(len(sensor_names))
+    missing_feet = total_feet - num_in_contact
+    # The penalty is the negative number of missing feet
+    penalty = -missing_feet
+    return penalty
 
