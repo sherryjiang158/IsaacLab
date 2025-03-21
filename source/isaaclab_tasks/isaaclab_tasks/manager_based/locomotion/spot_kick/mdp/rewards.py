@@ -40,6 +40,8 @@ def approach_ball(env):
     reward = torch.pow(reward, 2)
     # If the toe is within the threshold, double the reward
     reward = torch.where(distance <= threshold, 2 * reward, reward)
+    print("approach ball reward shape", reward.shape)
+
     return reward
 
 
@@ -72,7 +74,7 @@ def kick_ball_velocity(env):
     bonus_high = torch.where(speed > high_threshold, 0.5, torch.tensor(0.0, device=speed.device))
 
     reward = speed + bonus_low + bonus_high
-    print("reward shape", reward.shape)
+    print("ball velocity reward shape", reward.shape)
     
     return reward
 
