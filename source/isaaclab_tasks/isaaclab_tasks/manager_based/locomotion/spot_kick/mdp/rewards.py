@@ -40,7 +40,7 @@ def approach_ball(env):
     reward = torch.pow(reward, 2)
     # If the toe is within the threshold, double the reward
     reward = torch.where(distance <= threshold, 2 * reward, reward)
-    print("approach ball reward shape", reward.shape)
+    # print("approach ball reward shape", reward.shape)
 
     return reward
 
