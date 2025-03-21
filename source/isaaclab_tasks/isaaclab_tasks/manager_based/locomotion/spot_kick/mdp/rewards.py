@@ -110,7 +110,6 @@ def kick_ball_velocity(env):
 #     return -penalty
 
 
-
 def base_orientation_penalty(env: ManagerBasedRLEnv) -> torch.Tensor:
     """Penalize non-flat base orientation
 
@@ -120,25 +119,6 @@ def base_orientation_penalty(env: ManagerBasedRLEnv) -> torch.Tensor:
     # extract the used quantities (to enable type-hinting)
     robot_data = env.scene["robot"].data
     return torch.linalg.norm((robot_data.projected_gravity_b[:, :2]), dim=1)
-
-
-# def support_feet_leave_ground_penalty(env, params):
-#     """
-#     Penalizes when the support feet lose contact with the ground.
-    
-#     Explanation:
-#       - Uses contact sensor data from support feet (e.g., defined under "contact_forces_support").
-#       - Checks if each foot's measured force exceeds a small threshold, indicating contact.
-#       - Computes the fraction of support feet in contact.
-#       - Returns a negative penalty that increases as fewer feet are in contact.
-#     """
-#     sensor_data = env.scene["contact_forces_support"].data
-#     forces = sensor_data.force  # assumed shape: [N, num_feet]
-#     threshold = 1e-5  # threshold to consider a foot in contact, !!!! we may need to adjust this 
-#     contact = (forces > threshold).float()  # 1 if in contact, 0 otherwise
-#     contact_fraction = contact.sum(dim=-1) / forces.shape[-1]
-#     penalty = 1.0 - contact_fraction  # 0 if all feet are in contact; 1 if none.
-#     return -penalty
 
 
 ## omit this first? Since similar information would be captured by base orientation penalty?
