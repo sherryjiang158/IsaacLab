@@ -70,8 +70,11 @@ def kick_ball_velocity(env):
     # additional bonus of 0.5 if above high_threshold.
     bonus_low = torch.where(speed > low_threshold, 0.5, torch.tensor(0.0, device=speed.device))
     bonus_high = torch.where(speed > high_threshold, 0.5, torch.tensor(0.0, device=speed.device))
+
+    reward = speed + bonus_low + bonus_high
+    print("reward shape", reward.shape)
     
-    return speed + bonus_low + bonus_high
+    return reward
 
 
 # def action_rate_l2(env, params):
@@ -104,26 +107,6 @@ def kick_ball_velocity(env):
 #     penalty = torch.norm(joint_vel, dim=-1) ** 2
 #     return -penalty
 
-
-def base_orientation_penalty(env):
-    """
-    Penalizes deviations of the robot's base orientation from the desired upright orientation.
-    
-    Explanation:
-      - Retrieves the robot's base orientation as a quaternion (shape [N, 4]).
-      - Compares it with the desired upright quaternion (0, 0, 0, 1),
-        which represents no rotation relative to the world frame (i.e. perfectly upright).
-      - The similarity is measured via the dot product between the two quaternions.
-      - Returns a penalty that increases as the base deviates from upright.
-    """
-    robot_data = env.scene["robot"].data
-    base_quat = robot_data.root_rot_w  # shape: [N, 4]
-    # Desired upright orientation: (0, 0, 0, 1) in quaternion (x, y, z, w) format.
-    desired_quat = torch.tensor([0.0, 0.0, 0.0, 1.0], device=base_quat.device).unsqueeze(0)
-    # Compute the dot product as a similarity measure (1 means perfect alignment)
-    dot = torch.abs(torch.sum(base_quat * desired_quat, dim=-1)) # Notice that the dot product is for alignment
-    penalty = 1.0 - dot  # Zero penalty when perfectly aligned; up to 1 when completely misaligned.
-    return -penalty
 
 
 def base_orientation_penalty(env: ManagerBasedRLEnv) -> torch.Tensor:
