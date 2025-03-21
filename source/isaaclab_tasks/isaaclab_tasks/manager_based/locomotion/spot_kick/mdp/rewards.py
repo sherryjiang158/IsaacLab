@@ -94,7 +94,7 @@ def kick_ball_velocity(env):
     bonus_high = torch.where(projected_speed > high_threshold, 0.5, torch.tensor(0.0, device=projected_speed.device))
 
     reward = projected_speed + bonus_low + bonus_high
-    print("ball velocity reward shape", reward.shape)
+    # print("ball velocity reward shape", reward.shape)
     
     return reward
 
@@ -173,8 +173,8 @@ def support_feet_leave_ground_penalty(env):
         else:
             contact_indicator = (forces > threshold).float()
         contacts.append(contact_indicator)
-        print("contact forces", forces)
-    print(contacts)
+        # print("contact forces", forces)
+    # print(contacts)
     # Stack contact indicators; shape: [N, num_sensors]
     contacts_tensor = torch.stack(contacts, dim=-1)
     # Count the number of feet in contact for each environment
@@ -186,7 +186,7 @@ def support_feet_leave_ground_penalty(env):
     penalty = penalty.squeeze(-1)
 
 
-    print("supporting foot penalty:", penalty)
-    print("penalty shape", penalty.shape)
+    # print("supporting foot penalty:", penalty)
+    # print("penalty shape", penalty.shape)
 
     return penalty
