@@ -199,5 +199,6 @@ def support_feet_leave_ground_penalty(env):
     # The penalty is the negative number of missing feet
     penalty = -missing_feet
     print("supporting foot penalty:", penalty)
+    print("penalty shape", penalty.shape)
     return penalty
 
