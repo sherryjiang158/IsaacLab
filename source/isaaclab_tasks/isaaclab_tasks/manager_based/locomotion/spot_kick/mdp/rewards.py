@@ -174,7 +174,7 @@ def support_feet_leave_ground_penalty(env):
             contact_indicator = (forces > threshold).float()
         contacts.append(contact_indicator)
         print("contact forces", forces)
-    
+    print(contacts)
     # Stack contact indicators; shape: [N, num_sensors]
     contacts_tensor = torch.stack(contacts, dim=-1)
     # Count the number of feet in contact for each environment
