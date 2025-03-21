@@ -63,17 +63,36 @@ def kick_ball_velocity(env):
     ball_data = env.scene["ball"].data
     
     ball_vel = ball_data.root_state_w[:, 7:10]  # assumed shape [N, 3]
-    speed = torch.norm(ball_vel, dim=-1)
+    ball_vel_xy = ball_vel[:, :2]
+    robot_quat = robot_data.root_state_w[:, 3:7]  # shape: [N, 4]
+
+    # Extract quaternion components.
+    q_x = robot_quat[:, 0]
+    q_y = robot_quat[:, 1]
+    q_z = robot_quat[:, 2]
+    q_w = robot_quat[:, 3]
+
+    # Convert quaternion to yaw angle.
+    # Yaw is computed as: atan2(2*(w*z + x*y), 1 - 2*(y^2 + z^2))
+    yaw = torch.atan2(2 * (q_w * q_z + q_x * q_y),
+                      1 - 2 * (q_y ** 2 + q_z ** 2))
+
+    # Compute the robot's forward vector on the xy-plane.
+    robot_forward = torch.stack([torch.cos(yaw), torch.sin(yaw)], dim=-1)  # shape: [N, 2]
+
+    # Project the ball's xy velocity onto the robot's forward direction.
+    projected_speed = (ball_vel_xy * robot_forward).sum(dim=-1)  # dot product, shape: [N]
+
     
     low_threshold = 0.5 # we can config this differently if we want to
     high_threshold = 1.0
     
     # Bonus of 0.5 if the ball speed is above low_threshold,
     # additional bonus of 0.5 if above high_threshold.
-    bonus_low = torch.where(speed > low_threshold, 0.5, torch.tensor(0.0, device=speed.device))
-    bonus_high = torch.where(speed > high_threshold, 0.5, torch.tensor(0.0, device=speed.device))
+    bonus_low = torch.where(projected_speed > low_threshold, 0.5, torch.tensor(0.0, device=projected_speed.device))
+    bonus_high = torch.where(projected_speed > high_threshold, 0.5, torch.tensor(0.0, device=projected_speed.device))
 
-    reward = speed + bonus_low + bonus_high
+    reward = projected_speed + bonus_low + bonus_high
     print("ball velocity reward shape", reward.shape)
     
     return reward
