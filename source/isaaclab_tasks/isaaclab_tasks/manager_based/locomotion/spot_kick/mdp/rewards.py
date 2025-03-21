@@ -198,5 +198,6 @@ def support_feet_leave_ground_penalty(env):
     missing_feet = total_feet - num_in_contact
     # The penalty is the negative number of missing feet
     penalty = -missing_feet
+    print("supporting foot penalty:", penalty)
     return penalty
 
