@@ -64,6 +64,7 @@ def kick_ball_velocity(env):
     
     ball_vel = ball_data.root_state_w[:, 7:10]  # assumed shape [N, 3]
     ball_vel_xy = ball_vel[:, :2]
+    robot_data = env.scene["robot"].data
     robot_quat = robot_data.root_state_w[:, 3:7]  # shape: [N, 4]
 
     # Extract quaternion components.
