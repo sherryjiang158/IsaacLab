@@ -64,7 +64,7 @@ class MySceneCfg(InteractiveSceneCfg):
             collision_props=sim_utils.CollisionPropertiesCfg(),
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 1.0, 0.0), metallic=0.2),
         ),
-        init_state=RigidObjectCfg.InitialStateCfg(init_ball_position),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=init_ball_position),
     )
 
     contact_forces_ball = ContactSensorCfg(
