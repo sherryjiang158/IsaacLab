@@ -268,6 +268,15 @@ class EventCfg:
 class RewardsCfg:
     """Reward terms for the kicking MDP."""
 
+    air_time = RewTerm(
+        func=mdp.air_time_reward,
+        weight=0.5,
+        params={
+            "mode_time": 0.4,
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".fr_foot"),
+        },
+    )
+
     # 1. Approach the ball: 
     # Encourage the kicking leg's toe to get close to the ball.
     approach_ball = RewTerm(

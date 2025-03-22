@@ -165,15 +165,22 @@ def kick_ball_velocity(env):
     return reward
 
 
-# def base_orientation_penalty(env: ManagerBasedRLEnv) -> torch.Tensor:
-#     """Penalize non-flat base orientation
+def air_time_reward(
+    env: ManagerBasedRLEnv,
+    sensor_cfg: SceneEntityCfg,
+    mode_time: float,
+) -> torch.Tensor:
+    """Reward longer feet air and contact time."""
+    # extract the used quantities (to enable type-hinting)
+    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+    if contact_sensor.cfg.track_air_time is False:
+        raise RuntimeError("Activate ContactSensor's track_air_time!")
+    # compute the reward
+    current_air_time = contact_sensor.data.current_air_time[:, sensor_cfg.body_ids]
+    # current_contact_time = contact_sensor.data.current_contact_time[:, sensor_cfg.body_ids]
 
-#     This is computed by penalizing the xy-components of the projected gravity vector.
-#     This is adapted from Spot walking example
-#     """
-#     # extract the used quantities (to enable type-hinting)
-#     robot_data = env.scene["robot"].data
-#     return torch.linalg.norm((robot_data.projected_gravity_b[:, :2]), dim=1)
+    reward = torch.clip(current_air_time, -mode_time, mode_time)
+    return reward
 
 
 ## omit this first? Since similar information would be captured by base orientation penalty?
