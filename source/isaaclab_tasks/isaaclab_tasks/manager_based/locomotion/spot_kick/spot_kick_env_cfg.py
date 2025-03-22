@@ -65,7 +65,7 @@ class MySceneCfg(InteractiveSceneCfg):
             collision_props=sim_utils.CollisionPropertiesCfg(),
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 1.0, 0.0), metallic=0.2),
         ),
-        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.1, 0, 0)),
+        init_state=RigidObjectCfg.InitialStateCfg(), #pos omitted for initial position
     )
 
     contact_forces_ball = ContactSensorCfg(
@@ -254,14 +254,14 @@ class EventCfg:
             "asset_cfg": SceneEntityCfg("robot"),
         },
     )
-    #  # Randomize the ball's starting position for additional variability
-    # randomize_ball_position = EventTerm(
-    #     func=mdp.randomize_ball_position,
-    #     mode="reset",
-    #     # params={
-    #     #     "position_range": ((-0.1, 0.1), (-0.1, 0.1), (0.0, 0.0)), # !!!! May need to adjust based on code running situation
-    #     # },
-    # )
+     # Randomize the ball's starting position for additional variability
+    randomize_ball_position = EventTerm(
+        func=mdp.randomize_ball_position,
+        mode="reset",
+        # params={
+        #     "position_range": ((-0.1, 0.1), (-0.1, 0.1), (0.0, 0.0)), # !!!! May need to adjust based on code running situation
+        # },
+    )
 
     
 @configclass
