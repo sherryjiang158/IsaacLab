@@ -11,38 +11,42 @@ if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
     from isaaclab.managers import RewardTermCfg
 
-def approach_ball(env):
-    """
-    Reward for approaching the ball using an inverse-square law.
+# def approach_ball(env):
+#     """
+#     Reward for approaching the ball using an inverse-square law.
     
-    This reward is computed based on the Euclidean distance between the kicking leg's toe
-    and the ball. It uses a piecewise scaling:
-      - The reward is given by (1/(1 + distance^2))^2.
-      - If the toe is within a given threshold, the reward is doubled.
+#     This reward is computed based on the Euclidean distance between the kicking leg's toe
+#     and the ball. It uses a piecewise scaling:
+#       - The reward is given by (1/(1 + distance^2))^2.
+#       - If the toe is within a given threshold, the reward is doubled.
       
-    Explanation:
-      - Retrieves the toe position from the kicking_leg_frame.
-      - Retrieves the ball's position from its data.
-      - Computes the Euclidean distance.
-      - Applies the inverse-square law and squares it for sharper decay.
-      - Uses torch.where to double the reward when within the threshold.
-    """
-    threshold = 0.1
-    # Get the toe's world position (assumes shape [N, 3])
-    toe_pos = env.scene["kicking_leg_frame"].data.target_pos_w[..., 0, :]
-    # Get the ball's world position (assumed to be in root_pos_w)
-    ball_pos = env.scene["ball"].data.root_pos_w
-    # Compute Euclidean distance between toe and ball
-    distance = torch.norm(ball_pos - toe_pos, dim=-1, p=2)
+#     Explanation:
+#       - Retrieves the toe position from the kicking_leg_frame.
+#       - Retrieves the ball's position from its data.
+#       - Computes the Euclidean distance.
+#       - Applies the inverse-square law and squares it for sharper decay.
+#       - Uses torch.where to double the reward when within the threshold.
+#     """
+#     threshold = 0.1
+#     # Get the toe's world position (assumes shape [N, 3])
+#     toe_pos = env.scene["kicking_leg_frame"].data.target_pos_w[..., 0, :]
+#     # Get the ball's world position (assumed to be in root_pos_w)
+#     ball_pos = env.scene["ball"].data.root_pos_w
+#     # Compute Euclidean distance between toe and ball
+#     distance = torch.norm(ball_pos - toe_pos, dim=-1, p=2)
     
-    # Inverse-square law reward, squared for sharper decay with distance
-    reward = 1.0 / (1.0 + distance**2)
-    reward = torch.pow(reward, 2)
-    # If the toe is within the threshold, double the reward
-    reward = torch.where(distance <= threshold, 2 * reward, reward)
-    # print("approach ball reward shape", reward.shape)
+#     # Inverse-square law reward, squared for sharper decay with distance
+#     reward = 1.0 / (1.0 + distance**2)
+#     reward = torch.pow(reward, 2)
+#     # If the toe is within the threshold, double the reward
+#     reward = torch.where(distance <= threshold, 2 * reward, reward)
+#     # print("approach ball reward shape", reward.shape)
+#     return reward
 
-    return reward
+def ball_displacement(env):
+    ball_data = env.scene["ball"].data
+    current_pos = ball_data.root_state_w[:, :3]
+    return current_pos[0]
 
 
 def kick_ball_velocity(env):
@@ -63,27 +67,13 @@ def kick_ball_velocity(env):
     ball_data = env.scene["ball"].data
     
     ball_vel = ball_data.root_state_w[:, 7:10]  # assumed shape [N, 3]
-    ball_vel_xy = ball_vel[:, :2]
-    robot_data = env.scene["robot"].data
-    robot_quat = robot_data.root_state_w[:, 3:7]  # shape: [N, 4]
+    # ball_vel_xy = ball_vel[:, :2]
 
-    # Extract quaternion components.
-    q_x = robot_quat[:, 0]
-    q_y = robot_quat[:, 1]
-    q_z = robot_quat[:, 2]
-    q_w = robot_quat[:, 3]
-
-    # Convert quaternion to yaw angle.
-    # Yaw is computed as: atan2(2*(w*z + x*y), 1 - 2*(y^2 + z^2))
-    yaw = torch.atan2(2 * (q_w * q_z + q_x * q_y),
-                      1 - 2 * (q_y ** 2 + q_z ** 2))
-
-    # Compute the robot's forward vector on the xy-plane.
-    robot_forward = torch.stack([torch.cos(yaw), torch.sin(yaw)], dim=-1)  # shape: [N, 2]
+    # desired_direction =   # shape: [N, 2]
 
     # Project the ball's xy velocity onto the robot's forward direction.
-    projected_speed = (ball_vel_xy * robot_forward).sum(dim=-1)  # dot product, shape: [N]
-
+    # projected_speed = (ball_vel_xy * desired_direction).sum(dim=-1)  # dot product, shape: [N]
+    projected_speed = ball_vel[:, 0] # just the velocity in x directions
     
     low_threshold = 0.5 # we can config this differently if we want to
     high_threshold = 1.0

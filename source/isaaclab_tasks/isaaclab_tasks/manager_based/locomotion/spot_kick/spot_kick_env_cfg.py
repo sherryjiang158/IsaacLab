@@ -49,6 +49,8 @@ class MySceneCfg(InteractiveSceneCfg):
     # Robot configuration
     robot = SPOT_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
     
+    #init_ball_position: torch.Tensor = torch.tensor([0.0, 0.0, 0.0])
+
     # Rigid Object to create a ball
     ball = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/Sphere",
@@ -59,7 +61,7 @@ class MySceneCfg(InteractiveSceneCfg):
             collision_props=sim_utils.CollisionPropertiesCfg(),
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 1.0, 0.0), metallic=0.2),
         ),
-        init_state=RigidObjectCfg.InitialStateCfg(),
+        init_state=RigidObjectCfg.InitialStateCfg(pos = init_ball_position),
     )
 
     contact_forces_ball = ContactSensorCfg(
@@ -274,9 +276,13 @@ class RewardsCfg:
 
     # 1. Approach the ball: 
     # Encourage the kicking leg's toe to get close to the ball.
-    approach_ball = RewTerm(
-        func=mdp.approach_ball,
-        weight=3.0,
+    # approach_ball = RewTerm(
+    #     func=mdp.approach_ball,
+    #     weight=3.0,
+    # )
+    ball_displacement = RewTerm(
+        func=mdp.ball_displacement,
+        weight = 5.0
     )
     
     # # 2. Alignment of kicking leg: Reward for aligning the kicking leg (toe) properly with the ball.
@@ -289,7 +295,7 @@ class RewardsCfg:
     # (measured by ball velocity post-impact).
     kick_ball_velocity = RewTerm(
         func=mdp.kick_ball_velocity,
-        weight=5.0
+        weight=3.0
     )
     
     # Let's not work on this yet... right now, just focus on get the ball rolling.
@@ -322,7 +328,7 @@ class RewardsCfg:
 
     support_feet_ground_penalty = RewTerm(
         func=mdp.support_feet_leave_ground_penalty,
-        weight=-10.0,  # High weight to strongly discourage lifting support feet
+        weight=-30.0,  # High weight to strongly discourage lifting support feet
     )
 
 @configclass
