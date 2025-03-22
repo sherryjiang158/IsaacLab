@@ -11,37 +11,116 @@ if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
     from isaaclab.managers import RewardTermCfg
 
-# def approach_ball(env):
-#     """
-#     Reward for approaching the ball using an inverse-square law.
+def approach_ball(env):
+    """
+    Reward for approaching the ball using an inverse-square law.
     
-#     This reward is computed based on the Euclidean distance between the kicking leg's toe
-#     and the ball. It uses a piecewise scaling:
-#       - The reward is given by (1/(1 + distance^2))^2.
-#       - If the toe is within a given threshold, the reward is doubled.
+    This reward is computed based on the Euclidean distance between the kicking leg's toe
+    and the ball. It uses a piecewise scaling:
+      - The reward is given by (1/(1 + distance^2))^2.
+      - If the toe is within a given threshold, the reward is doubled.
       
-#     Explanation:
-#       - Retrieves the toe position from the kicking_leg_frame.
-#       - Retrieves the ball's position from its data.
-#       - Computes the Euclidean distance.
-#       - Applies the inverse-square law and squares it for sharper decay.
-#       - Uses torch.where to double the reward when within the threshold.
-#     """
-#     threshold = 0.1
-#     # Get the toe's world position (assumes shape [N, 3])
-#     toe_pos = env.scene["kicking_leg_frame"].data.target_pos_w[..., 0, :]
-#     # Get the ball's world position (assumed to be in root_pos_w)
-#     ball_pos = env.scene["ball"].data.root_pos_w
-#     # Compute Euclidean distance between toe and ball
-#     distance = torch.norm(ball_pos - toe_pos, dim=-1, p=2)
+    Explanation:
+      - Retrieves the toe position from the kicking_leg_frame.
+      - Retrieves the ball's position from its data.
+      - Computes the Euclidean distance.
+      - Applies the inverse-square law and squares it for sharper decay.
+      - Uses torch.where to double the reward when within the threshold.
+    """
+    threshold = 0.1
+    # Get the toe's world position (assumes shape [N, 3])
+    toe_pos = env.scene["kicking_leg_frame"].data.target_pos_w[..., 0, :]
+    # Get the ball's world position (assumed to be in root_pos_w)
+    ball_pos = env.scene["ball"].data.root_pos_w
+    # Compute Euclidean distance between toe and ball
+    distance = torch.norm(ball_pos - toe_pos, dim=-1, p=2)
     
-#     # Inverse-square law reward, squared for sharper decay with distance
-#     reward = 1.0 / (1.0 + distance**2)
-#     reward = torch.pow(reward, 2)
-#     # If the toe is within the threshold, double the reward
-#     reward = torch.where(distance <= threshold, 2 * reward, reward)
-#     # print("approach ball reward shape", reward.shape)
-#     return reward
+    # Inverse-square law reward, squared for sharper decay with distance
+    reward = 1.0 / (1.0 + distance**2)
+    reward = torch.pow(reward, 2)
+    # If the toe is within the threshold, double the reward
+    reward = torch.where(distance <= threshold, 2 * reward, reward)
+    # print("approach ball reward shape", reward.shape)
+    return reward
+
+##
+# Regularization Penalties
+##
+
+
+def action_smoothness_penalty(env: ManagerBasedRLEnv) -> torch.Tensor:
+    """Penalize large instantaneous changes in the network action output"""
+    return torch.linalg.norm((env.action_manager.action - env.action_manager.prev_action), dim=1)
+
+
+# ! look into simplifying the kernel here; it's a little oddly complex
+def base_motion_penalty(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg) -> torch.Tensor:
+    """Penalize base vertical and roll/pitch velocity"""
+    # extract the used quantities (to enable type-hinting)
+    asset: RigidObject = env.scene[asset_cfg.name]
+    return 0.8 * torch.square(asset.data.root_lin_vel_b[:, 2]) + 0.2 * torch.sum(
+        torch.abs(asset.data.root_ang_vel_b[:, :2]), dim=1
+    )
+
+def base_orientation_penalty(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg) -> torch.Tensor:
+    """Penalize non-flat base orientation
+
+    This is computed by penalizing the xy-components of the projected gravity vector.
+    """
+    # extract the used quantities (to enable type-hinting)
+    asset: RigidObject = env.scene[asset_cfg.name]
+    return torch.linalg.norm((asset.data.projected_gravity_b[:, :2]), dim=1)
+
+
+def foot_slip_penalty(
+    env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg, sensor_cfg: SceneEntityCfg, threshold: float
+) -> torch.Tensor:
+    """Penalize foot planar (xy) slip when in contact with the ground"""
+    asset: RigidObject = env.scene[asset_cfg.name]
+    # extract the used quantities (to enable type-hinting)
+    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+
+    # check if contact force is above threshold
+    net_contact_forces = contact_sensor.data.net_forces_w_history
+    is_contact = torch.max(torch.norm(net_contact_forces[:, :, sensor_cfg.body_ids], dim=-1), dim=1)[0] > threshold
+    foot_planar_velocity = torch.linalg.norm(asset.data.body_lin_vel_w[:, asset_cfg.body_ids, :2], dim=2)
+
+    reward = is_contact * foot_planar_velocity
+    return torch.sum(reward, dim=1)
+
+
+def joint_acceleration_penalty(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg) -> torch.Tensor:
+    """Penalize joint accelerations on the articulation."""
+    # extract the used quantities (to enable type-hinting)
+    asset: Articulation = env.scene[asset_cfg.name]
+    return torch.linalg.norm((asset.data.joint_acc), dim=1)
+
+
+def joint_position_penalty(
+    env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg, stand_still_scale: float, velocity_threshold: float
+) -> torch.Tensor:
+    """Penalize joint position error from default on the articulation."""
+    # extract the used quantities (to enable type-hinting)
+    asset: Articulation = env.scene[asset_cfg.name]
+    cmd = torch.linalg.norm(env.command_manager.get_command("base_velocity"), dim=1)
+    body_vel = torch.linalg.norm(asset.data.root_lin_vel_b[:, :2], dim=1)
+    reward = torch.linalg.norm((asset.data.joint_pos - asset.data.default_joint_pos), dim=1)
+    return torch.where(torch.logical_or(cmd > 0.0, body_vel > velocity_threshold), reward, stand_still_scale * reward)
+
+
+def joint_torques_penalty(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg) -> torch.Tensor:
+    """Penalize joint torques on the articulation."""
+    # extract the used quantities (to enable type-hinting)
+    asset: Articulation = env.scene[asset_cfg.name]
+    return torch.linalg.norm((asset.data.applied_torque), dim=1)
+
+
+def joint_velocity_penalty(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg) -> torch.Tensor:
+    """Penalize joint velocities on the articulation."""
+    # extract the used quantities (to enable type-hinting)
+    asset: Articulation = env.scene[asset_cfg.name]
+    return torch.linalg.norm((asset.data.joint_vel), dim=1)
+
 
 def ball_displacement(env):
     ball_data = env.scene["ball"].data
@@ -89,46 +168,15 @@ def kick_ball_velocity(env):
     return reward
 
 
-# def action_rate_l2(env, params):
-#     """
-#     Penalizes rapid changes in actions (L2 norm of the difference between current and last actions).
-    
-#     Explanation:
-#       - Assumes env.current_action and env.last_action are tensors of shape [N, action_dim].
-#       - Computes the squared L2 norm of their difference.
-#       - Returns a negative penalty value (so larger changes yield larger negative rewards).
-#     """
-#     current_action = env.current_action  # shape: [N, action_dim]
-#     last_action = env.last_action          # shape: [N, action_dim]
-#     diff = current_action - last_action
-#     penalty = torch.norm(diff, dim=-1) ** 2
-#     return -penalty
+# def base_orientation_penalty(env: ManagerBasedRLEnv) -> torch.Tensor:
+#     """Penalize non-flat base orientation
 
-
-# def joint_vel_l2(env, params):
+#     This is computed by penalizing the xy-components of the projected gravity vector.
+#     This is adapted from Spot walking example
 #     """
-#     Penalizes high joint velocities.
-    
-#     Explanation:
-#       - Retrieves the robot's joint velocities from its data (assumed shape [N, num_joints]).
-#       - Computes the squared L2 norm across joints.
-#       - Returns a negative penalty to discourage unnecessarily fast or erratic motions.
-#     """
+#     # extract the used quantities (to enable type-hinting)
 #     robot_data = env.scene["robot"].data
-#     joint_vel = robot_data.joint_vel  # shape: [N, num_joints]
-#     penalty = torch.norm(joint_vel, dim=-1) ** 2
-#     return -penalty
-
-
-def base_orientation_penalty(env: ManagerBasedRLEnv) -> torch.Tensor:
-    """Penalize non-flat base orientation
-
-    This is computed by penalizing the xy-components of the projected gravity vector.
-    This is adapted from Spot walking example
-    """
-    # extract the used quantities (to enable type-hinting)
-    robot_data = env.scene["robot"].data
-    return torch.linalg.norm((robot_data.projected_gravity_b[:, :2]), dim=1)
+#     return torch.linalg.norm((robot_data.projected_gravity_b[:, :2]), dim=1)
 
 
 ## omit this first? Since similar information would be captured by base orientation penalty?

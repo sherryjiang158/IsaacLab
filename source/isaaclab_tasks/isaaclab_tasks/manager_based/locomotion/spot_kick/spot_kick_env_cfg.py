@@ -6,6 +6,7 @@
 import math
 from dataclasses import MISSING
 import torch
+import random
 
 import isaaclab.sim as sim_utils
 from isaaclab.assets import ArticulationCfg, AssetBaseCfg
@@ -48,8 +49,10 @@ class MySceneCfg(InteractiveSceneCfg):
     )
     # Robot configuration
     robot = SPOT_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+
+    dx, dy, dz = random.uniform(0, 0.05), random.uniform(0, 0.05), random.uniform(0, 0.05)
     
-    #init_ball_position: torch.Tensor = torch.tensor([0.0, 0.0, 0.0])
+    init_ball_position = (0.1 + dx, 0.0 + dy, 0.0 + dz)
 
     # Rigid Object to create a ball
     ball = RigidObjectCfg(
@@ -61,7 +64,7 @@ class MySceneCfg(InteractiveSceneCfg):
             collision_props=sim_utils.CollisionPropertiesCfg(),
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 1.0, 0.0), metallic=0.2),
         ),
-        init_state=RigidObjectCfg.InitialStateCfg(),
+        init_state=RigidObjectCfg.InitialStateCfg(init_ball_position),
     )
 
     contact_forces_ball = ContactSensorCfg(
@@ -227,7 +230,6 @@ class EventCfg:
             "num_buckets": 16,
         },
     )
-
    
 
     # Reset events
@@ -251,22 +253,13 @@ class EventCfg:
             "asset_cfg": SceneEntityCfg("robot"),
         },
     )
-     # Randomize the ball's starting position for additional variability
-    randomize_ball_position = EventTerm(
-        func=mdp.randomize_ball_position,
-        mode="reset",
-        # params={
-        #     "position_range": ((-0.1, 0.1), (-0.1, 0.1), (0.0, 0.0)), # !!!! May need to adjust based on code running situation
-        # },
-    )
-
-    # reset_ball = EventTerm(
-    #     func=mdp.reset_ball_position,
+    #  # Randomize the ball's starting position for additional variability
+    # randomize_ball_position = EventTerm(
+    #     func=mdp.randomize_ball_position,
     #     mode="reset",
-    #     params={
-    #         "asset_cfg": SceneEntityCfg("ball"),
-    #         "position_range": {"x": (0.1, 0.3), "y": (-0.1, 0.1)},
-    #     },
+    #     # params={
+    #     #     "position_range": ((-0.1, 0.1), (-0.1, 0.1), (0.0, 0.0)), # !!!! May need to adjust based on code running situation
+    #     # },
     # )
 
     
@@ -276,13 +269,13 @@ class RewardsCfg:
 
     # 1. Approach the ball: 
     # Encourage the kicking leg's toe to get close to the ball.
-    # approach_ball = RewTerm(
-    #     func=mdp.approach_ball,
-    #     weight=3.0,
-    # )
+    approach_ball = RewTerm(
+        func=mdp.approach_ball,
+        weight=0.5,
+    )
     ball_displacement = RewTerm(
         func=mdp.ball_displacement,
-        weight = 5.0
+        weight = 10.0
     )
     
     # # 2. Alignment of kicking leg: Reward for aligning the kicking leg (toe) properly with the ball.
@@ -295,7 +288,7 @@ class RewardsCfg:
     # (measured by ball velocity post-impact).
     kick_ball_velocity = RewTerm(
         func=mdp.kick_ball_velocity,
-        weight=3.0
+        weight=5.0
     )
     
     # Let's not work on this yet... right now, just focus on get the ball rolling.
@@ -320,21 +313,63 @@ class RewardsCfg:
     
     # Penalties
 
-    # Penalizes deviations in the robot's base orientation.
-    base_orientation = RewTerm(
-        func=mdp.base_orientation_penalty,
-        weight=-2.0,
-    )
-
     support_feet_ground_penalty = RewTerm(
         func=mdp.support_feet_leave_ground_penalty,
-        weight=-30.0,  # High weight to strongly discourage lifting support feet
+        weight=-5.0,  # High weight to strongly discourage lifting support feet
     )
+
+    # -- penalties
+    action_smoothness = RewTerm(func=mdp.action_smoothness_penalty, weight=-1.0)
+
+    base_motion = RewTerm(
+        func=mdp.base_motion_penalty, weight=-2.0, params={"asset_cfg": SceneEntityCfg("robot")}
+    )
+    base_orientation = RewTerm(
+        func=mdp.base_orientation_penalty, weight=-3.0, params={"asset_cfg": SceneEntityCfg("robot")}
+    )
+    foot_slip = RewTerm(
+        func=mdp.foot_slip_penalty,
+        weight=-0.5,
+        params={
+            "asset_cfg": SceneEntityCfg("robot", body_names=".*_foot"),
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*_foot"),
+            "threshold": 1.0,
+        },
+    )
+    joint_acc = RewTerm(
+        func=mdp.joint_acceleration_penalty,
+        weight=-1.0e-4,
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*_h[xy]")},
+    )
+    joint_pos = RewTerm(
+        func=mdp.joint_position_penalty,
+        weight=-0.7,
+        params={
+            "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
+            "stand_still_scale": 5.0,
+            "velocity_threshold": 0.5,
+        },
+    )
+    joint_torques = RewTerm(
+        func=mdp.joint_torques_penalty,
+        weight=-5.0e-4,
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*")},
+    )
+    joint_vel = RewTerm(
+        func=mdp.joint_velocity_penalty,
+        weight=-1.0e-2,
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*_h[xy]")},
+    )
+
 
 @configclass
 class TerminationsCfg:
     """Termination terms for the MDP."""
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
+    body_contact = DoneTerm(
+        func=mdp.illegal_contact,
+        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=["body", ".*leg"]), "threshold": 1.0},
+    )
 
 
 @configclass
