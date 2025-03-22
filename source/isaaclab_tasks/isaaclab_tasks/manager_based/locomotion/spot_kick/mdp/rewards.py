@@ -180,7 +180,7 @@ def air_time_reward(
     # current_contact_time = contact_sensor.data.current_contact_time[:, sensor_cfg.body_ids]
 
     reward = torch.clip(current_air_time, -mode_time, mode_time)
-    return reward
+    return torch.sum(reward, dim=1)
 
 
 ## omit this first? Since similar information would be captured by base orientation penalty?
