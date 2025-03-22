@@ -285,7 +285,7 @@ class RewardsCfg:
     )
     ball_displacement = RewTerm(
         func=mdp.ball_displacement,
-        weight = 10.0
+        weight = 5.0
     )
     
     # # 2. Alignment of kicking leg: Reward for aligning the kicking leg (toe) properly with the ball.
