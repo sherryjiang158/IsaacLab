@@ -46,7 +46,7 @@ if TYPE_CHECKING:
 def ball_displacement(env):
     ball_data = env.scene["ball"].data
     current_pos = ball_data.root_state_w[:, :3]
-    return current_pos[0]
+    return current_pos[:, 0]
 
 
 def kick_ball_velocity(env):
