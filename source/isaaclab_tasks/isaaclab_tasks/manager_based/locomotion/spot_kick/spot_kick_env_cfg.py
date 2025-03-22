@@ -50,9 +50,9 @@ class MySceneCfg(InteractiveSceneCfg):
     # Robot configuration
     robot = SPOT_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
-    dx, dy, dz = random.uniform(0, 0.05), random.uniform(0, 0.05), random.uniform(0, 0.05)
+    #dx, dy, dz = random.uniform(0, 0.05), random.uniform(0, 0.05), random.uniform(0, 0.05)
     
-    init_ball_position = (0.1 + dx, 0.0 + dy, 0.0 + dz)
+    #init_ball_position = (0.1 + dx, 0.0 + dy, 0.0 + dz)
 
     # Rigid Object to create a ball
     ball = RigidObjectCfg(
@@ -64,7 +64,7 @@ class MySceneCfg(InteractiveSceneCfg):
             collision_props=sim_utils.CollisionPropertiesCfg(),
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 1.0, 0.0), metallic=0.2),
         ),
-        init_state=RigidObjectCfg.InitialStateCfg(pos=init_ball_position),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.1, 0, 0)),
     )
 
     contact_forces_ball = ContactSensorCfg(
