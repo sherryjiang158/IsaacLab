@@ -53,6 +53,7 @@ class MySceneCfg(InteractiveSceneCfg):
     #dx, dy, dz = random.uniform(0, 0.05), random.uniform(0, 0.05), random.uniform(0, 0.05)
     
     #init_ball_position = (0.1 + dx, 0.0 + dy, 0.0 + dz)
+    contact_forces = ContactSensorCfg(prim_path="{ENV_REGEX_NS}/Robot/.*", history_length=3, track_air_time=True)
 
     # Rigid Object to create a ball
     ball = RigidObjectCfg(
