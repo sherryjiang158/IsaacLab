@@ -96,16 +96,13 @@ def joint_acceleration_penalty(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg
     return torch.linalg.norm((asset.data.joint_acc), dim=1)
 
 
-def joint_position_penalty(
-    env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg, stand_still_scale: float, velocity_threshold: float
-) -> torch.Tensor:
-    """Penalize joint position error from default on the articulation."""
-    # extract the used quantities (to enable type-hinting)
+def joint_position_penalty_kick(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg) -> torch.Tensor:
+    """Penalize joint position error for the kicking task, where the robot's base remains static."""
     asset: Articulation = env.scene[asset_cfg.name]
-    cmd = torch.linalg.norm(env.command_manager.get_command("base_velocity"), dim=1)
-    body_vel = torch.linalg.norm(asset.data.root_lin_vel_b[:, :2], dim=1)
-    reward = torch.linalg.norm((asset.data.joint_pos - asset.data.default_joint_pos), dim=1)
-    return torch.where(torch.logical_or(cmd > 0.0, body_vel > velocity_threshold), reward, stand_still_scale * reward)
+    # Compute the joint position error
+    joint_error = torch.linalg.norm(asset.data.joint_pos - asset.data.default_joint_pos, dim=1)
+    # Apply a constant scaling factor if needed
+    return 5 * joint_error
 
 
 def joint_torques_penalty(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg) -> torch.Tensor:

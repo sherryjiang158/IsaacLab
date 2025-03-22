@@ -343,12 +343,10 @@ class RewardsCfg:
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*_h[xy]")},
     )
     joint_pos = RewTerm(
-        func=mdp.joint_position_penalty,
+        func=mdp.joint_position_penalty_kick,
         weight=-0.7,
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
-            "stand_still_scale": 5.0,
-            "velocity_threshold": 0.5,
         },
     )
     joint_torques = RewTerm(
