@@ -273,7 +273,7 @@ class RewardsCfg:
         weight=0.5,
         params={
             "mode_time": 0.4,
-            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".fr_foot"),
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names="fr_foot"),
         },
     )
 
