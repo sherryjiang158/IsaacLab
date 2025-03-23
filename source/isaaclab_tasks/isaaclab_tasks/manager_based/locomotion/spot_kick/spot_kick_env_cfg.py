@@ -284,7 +284,7 @@ class RewardsCfg:
         weight=0.5,
     )
     ball_displacement = RewTerm(
-        func=mdp.ball_displacement,
+        func=mdp.ball_displacement_reward,
         weight = 5.0
     )
     
@@ -297,7 +297,7 @@ class RewardsCfg:
     # 3. Kick impact: Reward for transferring momentum to the ball 
     # (measured by ball velocity post-impact).
     kick_ball_velocity = RewTerm(
-        func=mdp.kick_ball_velocity,
+        func=mdp.kick_ball_velocity_reward,
         weight=5.0
     )
     
@@ -323,19 +323,22 @@ class RewardsCfg:
     
     # Penalties
 
-    support_feet_ground_penalty = RewTerm(
+    support_feet_leave_ground_penalty = RewTerm(
         func=mdp.support_feet_leave_ground_penalty,
         weight=-5.0,  # High weight to strongly discourage lifting support feet
     )
 
     # -- penalties
-    action_smoothness = RewTerm(func=mdp.action_smoothness_penalty, weight=-1.0)
+    action_smoothness = RewTerm(func=mdp.action_smoothness_penalty, weight=-0.5)
 
     base_motion = RewTerm(
         func=mdp.base_motion_penalty, weight=-2.0, params={"asset_cfg": SceneEntityCfg("robot")}
     )
     base_orientation = RewTerm(
         func=mdp.base_orientation_penalty, weight=-3.0, params={"asset_cfg": SceneEntityCfg("robot")}
+    )
+    base_displacement = RewTerm(
+
     )
     foot_slip = RewTerm(
         func=mdp.foot_slip_penalty,
@@ -375,7 +378,7 @@ class TerminationsCfg:
     """Termination terms for the MDP."""
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
     body_contact = DoneTerm(
-        func=mdp.illegal_contact,
+        func=mdp.illegal_contact_kick,
         params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=["body", ".*leg"]), "threshold": 1.0},
     )
 

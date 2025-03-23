@@ -119,13 +119,13 @@ def joint_velocity_penalty(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg) ->
     return torch.linalg.norm((asset.data.joint_vel), dim=1)
 
 
-def ball_displacement(env):
+def ball_displacement_reward(env):
     ball_data = env.scene["ball"].data
     current_pos = ball_data.root_state_w[:, :3]
     return current_pos[:, 0]
 
 
-def kick_ball_velocity(env):
+def kick_ball_velocity_reward(env):
     """
     Reward for kicking the ball effectively, based on the ball's velocity.
     
