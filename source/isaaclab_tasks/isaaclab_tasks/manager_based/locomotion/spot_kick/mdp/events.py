@@ -96,6 +96,8 @@ def randomize_ball_position(env, position_range: tuple = None) -> None:
         random_offsets = torch.rand(toe_pos.shape, device=toe_pos.device) * (max_offsets - min_offsets) + min_offsets
     else:
         random_offsets = torch.zeros_like(toe_pos)
+
+    print("toe_position", toe_pos)
     
     # Compute the new ball position.
     new_pos = toe_pos + base_offset + random_offsets  # shape: [N, 3]
