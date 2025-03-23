@@ -20,5 +20,5 @@ def illegal_contact_kick(env: ManagerBasedRLEnv, threshold: float, sensor_cfg: S
     termination_value = torch.any(
         torch.max(torch.norm(net_contact_forces[:, :, sensor_cfg.body_ids], dim=-1), dim=1)[0] > threshold, dim=1
     )
-    print(termination_value)
+    print("termination values", termination_value)
     return termination_value
