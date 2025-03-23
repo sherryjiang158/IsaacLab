@@ -134,7 +134,7 @@ class MySceneCfg(InteractiveSceneCfg):
                 prim_path="{ENV_REGEX_NS}/Robot/fr_foot",  # Using the foot as the reference
                 name="toe",  
                 offset=OffsetCfg(
-                    pos=(0.0, 0.0, -0.05),  # !!! may need adjest to find best contact point
+                    pos=(0.0, 0.0, 0.0),  # !!! may need adjest to find best contact point
                     rot=(1.0, 0.0, 0.0, 0.0)  # !!!!!! Need to further adjust
                 ),
             ),
@@ -407,7 +407,7 @@ class SpotKickEnvCfg(ManagerBasedRLEnvCfg):
     #     """Post initialization."""
         # General settings
         self.decimation = 4
-        self.episode_length_s = 3.0  # Shorter episodes for kicking
+        self.episode_length_s = 2.0  # Shorter episodes for kicking
         
         # Simulation settings
         self.sim.dt = 0.005
