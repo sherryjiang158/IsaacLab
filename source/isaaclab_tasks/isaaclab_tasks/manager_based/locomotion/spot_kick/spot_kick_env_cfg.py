@@ -376,10 +376,10 @@ class RewardsCfg:
 class TerminationsCfg:
     """Termination terms for the MDP."""
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
-    body_contact = DoneTerm(
-        func=mdp.illegal_contact_kick,
-        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=["body"]), "threshold": 1.0},
-    )
+    # body_contact = DoneTerm(
+    #     func=mdp.illegal_contact_kick,
+    #     params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=["body"]), "threshold": 1.0},
+    # )
 
 
 @configclass
