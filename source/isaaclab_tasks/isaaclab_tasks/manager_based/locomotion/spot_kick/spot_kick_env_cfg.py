@@ -329,7 +329,7 @@ class RewardsCfg:
     )
 
     # -- penalties
-    action_smoothness = RewTerm(func=mdp.action_smoothness_penalty, weight=-0.5)
+    action_smoothness = RewTerm(func=mdp.action_smoothness_penalty, weight=-0.7)
 
     base_motion = RewTerm(
         func=mdp.base_motion_penalty, weight=-2.0, params={"asset_cfg": SceneEntityCfg("robot")}
@@ -337,9 +337,8 @@ class RewardsCfg:
     base_orientation = RewTerm(
         func=mdp.base_orientation_penalty, weight=-3.0, params={"asset_cfg": SceneEntityCfg("robot")}
     )
-    base_displacement = RewTerm(
-
-    )
+    # base_displacement = RewTerm(
+    # )
     foot_slip = RewTerm(
         func=mdp.foot_slip_penalty,
         weight=-0.5,
@@ -378,7 +377,7 @@ class TerminationsCfg:
     """Termination terms for the MDP."""
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
     body_contact = DoneTerm(
-        func=mdp.illegal_contact_kick,
+        func=mdp.illegal_contact,
         params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=["body", ".*leg"]), "threshold": 1.0},
     )
 
