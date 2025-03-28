@@ -11,6 +11,12 @@ if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
     from isaaclab.managers.command_manager import CommandTerm
 
+def time_out_kick(env: ManagerBasedRLEnv) -> torch.Tensor:
+    """Terminate the episode when the episode length exceeds the maximum episode length."""
+    if env.episode_length_buf >= env.max_episode_length:
+        print("TIME OUT!")
+    return env.episode_length_buf >= env.max_episode_length
+
 def illegal_contact_kick(env: ManagerBasedRLEnv, threshold: float, sensor_cfg: SceneEntityCfg) -> torch.Tensor:
     """Terminate when the contact force on the sensor exceeds the force threshold."""
     # extract the used quantities (to enable type-hinting)
@@ -33,5 +39,6 @@ def root_height_below_minimum_kick(
     """
     # extract the used quantities (to enable type-hinting)
     asset: RigidObject = env.scene[asset_cfg.name]
-    print("current_height", asset.data.root_pos_w[:, 2])
+    if asset.data.root_pos_w[:, 2] < minimum_height:
+        print("TOO LOW, current_height", asset.data.root_pos_w[:, 2])
     return asset.data.root_pos_w[:, 2] < minimum_height
