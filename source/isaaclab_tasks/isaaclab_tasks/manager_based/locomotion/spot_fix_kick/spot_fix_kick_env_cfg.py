@@ -28,7 +28,7 @@ from isaaclab.sensors.frame_transformer import OffsetCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
 
-import isaaclab_tasks.manager_based.locomotion.spot_kick.mdp as mdp
+import isaaclab_tasks.manager_based.locomotion.spot_fix_kick.mdp as mdp
 
 from isaaclab_assets.robots.spot import SPOT_CFG  # isort: skip
 from isaaclab.markers.config import FRAME_MARKER_CFG  # isort: skip
