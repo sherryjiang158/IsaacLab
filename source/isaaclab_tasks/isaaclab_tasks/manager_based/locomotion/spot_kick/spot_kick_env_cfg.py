@@ -381,8 +381,8 @@ class TerminationsCfg:
     #     params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=["body"]), "threshold": 1.0},
     # )
     root_height_below_minimum = DoneTerm(
-        func=mdp.root_height_below_minimum, 
-        params={"minimum_height": 0.05},
+        func=mdp.root_height_below_minimum_kick, 
+        params={"minimum_height": 0.1},
     )
 
 
