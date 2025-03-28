@@ -36,6 +36,7 @@ def reset_joints_around_default(
     The ranges are clipped to fit inside the soft joint limits. The sampled values are then set into the physics
     simulation.
     """
+    print("reset JOINT!!!!!")
     # extract the used quantities (to enable type-hinting)
     asset: Articulation = env.scene[asset_cfg.name]
     # get default joint state
@@ -76,6 +77,8 @@ def randomize_ball_position(env, position_range: tuple = None) -> None:
                         These offsets are added to the base offset for randomness.
                         If None, no extra randomization is applied.
     """
+    print("reset Ball!!!!!")
+
     # Retrieve the kicking leg's toe position (shape: [N, 3])
     toe_pos = env.scene["kicking_leg_frame"].data.target_pos_w[..., 0, :]
     
