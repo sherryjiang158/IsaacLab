@@ -21,7 +21,7 @@ def approach_ball(env):
         max_reward: The maximum reward value if ball is moving fast (i.e., kicked).
     """
     distance_threshold = 0.05  
-    ball_speed_threshold = 0.3,
+    ball_speed_threshold = 0.3
 
     # Get the toe position
     toe_pos = env.scene["kicking_leg_frame"].data.target_pos_w[..., 0, :]
