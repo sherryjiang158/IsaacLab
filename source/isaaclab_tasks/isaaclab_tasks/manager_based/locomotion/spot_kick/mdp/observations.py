@@ -18,6 +18,8 @@ def rel_ball_leg_position(env: ManagerBasedRLEnv) -> torch.Tensor:
     """
     # Get the frame data for the kicking leg (toe)
     leg_tf_data = env.scene["kicking_leg_frame"].data
+    print("kicking leg frame", leg_tf_data.target_pos_w[..., 0, :])
+    
     # Get the ball's data
     ball_data = env.scene["ball"].data
 

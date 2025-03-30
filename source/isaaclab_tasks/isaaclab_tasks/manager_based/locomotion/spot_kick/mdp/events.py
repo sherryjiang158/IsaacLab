@@ -36,10 +36,11 @@ def reset_joints_around_default(
     The ranges are clipped to fit inside the soft joint limits. The sampled values are then set into the physics
     simulation.
     """
-    print("reset JOINT!!!!!")
+    # print("reset JOINT!!!!!")
     # extract the used quantities (to enable type-hinting)
     asset: Articulation = env.scene[asset_cfg.name]
     # get default joint state
+    # default_joint_pos quantity is configured through the isaaclab.assets.ArticulationCfg.init_state parameter.
     joint_min_pos = asset.data.default_joint_pos[env_ids] + position_range[0]
     joint_max_pos = asset.data.default_joint_pos[env_ids] + position_range[1]
     joint_min_vel = asset.data.default_joint_vel[env_ids] + velocity_range[0]
@@ -77,7 +78,7 @@ def randomize_ball_position(env, position_range: tuple = None) -> None:
                         These offsets are added to the base offset for randomness.
                         If None, no extra randomization is applied.
     """
-    print("reset Ball!!!!!")
+    # print("reset Ball!!!!!")
 
     # Retrieve the kicking leg's toe position (shape: [N, 3])
     toe_pos = env.scene["kicking_leg_frame"].data.target_pos_w[..., 0, :]
@@ -100,7 +101,7 @@ def randomize_ball_position(env, position_range: tuple = None) -> None:
     else:
         random_offsets = torch.zeros_like(toe_pos)
 
-    print("toe_position", toe_pos)
+    # print("toe_position", toe_pos)
     
     # Compute the new ball position.
     new_pos = toe_pos + base_offset + random_offsets  # shape: [N, 3]
@@ -129,7 +130,7 @@ def randomize_ball_position(env, position_range: tuple = None) -> None:
     ball_asset = env.scene["ball"]
     ball_asset.write_root_pose_to_sim(new_state[:, :7])
     ball_asset.write_root_velocity_to_sim(new_state[:, 7:])
-    print("Updated ball position:", env.scene["ball"].data.root_pos_w)
+    # print("Updated ball position:", env.scene["ball"].data.root_pos_w)
 
     
 

@@ -24,7 +24,7 @@ def illegal_contact_kick(env: ManagerBasedRLEnv, threshold: float, sensor_cfg: S
     termination_value = torch.any(
         torch.max(torch.norm(net_contact_forces[:, :, sensor_cfg.body_ids], dim=-1), dim=1)[0] > threshold, dim=1
     )
-    print("termination values", termination_value)
+    # print("termination values", termination_value)
     return termination_value
 
 def root_height_below_minimum_kick(
@@ -37,5 +37,5 @@ def root_height_below_minimum_kick(
     """
     # extract the used quantities (to enable type-hinting)
     asset: RigidObject = env.scene[asset_cfg.name]
-    print("current_height", asset.data.root_pos_w[:, 2])
+    # print("current_height", asset.data.root_pos_w[:, 2])
     return asset.data.root_pos_w[:, 2] < minimum_height
