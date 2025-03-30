@@ -24,6 +24,8 @@ from isaaclab.sensors import ContactSensorCfg
 from isaaclab.sensors import FrameTransformerCfg
 from isaaclab.sensors.frame_transformer import OffsetCfg
 
+from isaaclab.actuators import DelayedPDActuatorCfg,
+
 
 from isaaclab.utils import configclass
 from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
@@ -69,7 +71,17 @@ class MySceneCfg(InteractiveSceneCfg):
                 "hr_kn": -2,  # all knees
             },
             joint_vel={".*": 0.0},
-    ),
+        ),
+        actuators={
+            "fr_leg": DelayedPDActuatorCfg(
+                joint_names_expr=["fr_hx", "fr_hy", "fr_kn"],
+                effort_limit=45.0,
+                stiffness=60.0,
+                damping=1.5,
+                min_delay=0,  # physics time steps (min: 2.0*0=0.0ms)
+                max_delay=4,  # physics time steps (max: 2.0*4=8.0ms)
+            ),
+        },
     )
 
     #dx, dy, dz = random.uniform(0, 0.05), random.uniform(0, 0.05), random.uniform(0, 0.05)
@@ -177,7 +189,7 @@ class ActionsCfg:
     
     joint_pos = mdp.JointPositionActionCfg(
         asset_name="robot",
-        joint_names=["fr_hx", "fr_hy", "fr_kn"], # only training on arm
+        joint_names=[".*"],
         scale=0.5,
         use_default_offset=True
     )
