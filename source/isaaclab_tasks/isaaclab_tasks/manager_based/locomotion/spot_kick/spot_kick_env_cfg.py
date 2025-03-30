@@ -177,7 +177,7 @@ class ActionsCfg:
     
     joint_pos = mdp.JointPositionActionCfg(
         asset_name="robot",
-        joint_names=[".*"],
+        joint_names=["fr_hx", "fr_hy", "fr_kn"], # only training on arm
         scale=0.5,
         use_default_offset=True
     )
