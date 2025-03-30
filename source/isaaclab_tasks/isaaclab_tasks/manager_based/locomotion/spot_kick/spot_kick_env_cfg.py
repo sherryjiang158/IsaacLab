@@ -60,11 +60,11 @@ class MySceneCfg(InteractiveSceneCfg):
                 "fr_hy": 0.8,  # front hip_y
                 "fr_kn": -1.5,  # all knees
 
-                "hl_hx": 0.15,
+                "hl_hx": 0.2, # 0.15
                 "hl_hy": 1.2,
                 "hl_kn": -2.18,  # all knees
 
-                "hr_hx": -0.15,
+                "hr_hx": -0.15, #-0.15
                 "hr_hy": 1.3,  # hind hip_y
                 "hr_kn": -2,  # all knees
             },
@@ -87,7 +87,7 @@ class MySceneCfg(InteractiveSceneCfg):
             collision_props=sim_utils.CollisionPropertiesCfg(),
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 1.0, 0.0), metallic=0.2),
         ),
-        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.47, -0.25, 0.1)),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.5, -0.25, 0.1)),
     )
 
     contact_forces_ball = ContactSensorCfg(
