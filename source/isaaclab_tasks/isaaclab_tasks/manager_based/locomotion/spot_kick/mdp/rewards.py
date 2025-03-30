@@ -245,12 +245,13 @@ def support_feet_leave_ground_penalty(env):
     return penalty
 
 def root_height_penalty(
-    env: ManagerBasedRLEnv, 
-    minimum_height: float, 
-    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
+    env: ManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg 
 ) -> torch.Tensor:
     """Essentially for robot fall. Large negative reward when the robot's root height falls below a threshold."""
-    asset: RigidObject = env.scene[asset_cfg.name]
+    asset: Articulation = env.scene[asset_cfg.name]
+    minimum_height = 0.1
+
     root_height = asset.data.root_pos_w[:, 2]
 
     # Apply penalty where termination condition is met
