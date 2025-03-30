@@ -13,35 +13,37 @@ if TYPE_CHECKING:
 
 def approach_ball(env):
     """
-    Reward for approaching the ball using an inverse-square law.
-    
-    This reward is computed based on the Euclidean distance between the kicking leg's toe
-    and the ball. It uses a piecewise scaling:
-      - The reward is given by (1/(1 + distance^2))^2.
-      - If the toe is within a given threshold, the reward is doubled.
-      
-    Explanation:
-      - Retrieves the toe position from the kicking_leg_frame.
-      - Retrieves the ball's position from its data.
-      - Computes the Euclidean distance.
-      - Applies the inverse-square law and squares it for sharper decay.
-      - Uses torch.where to double the reward when within the threshold.
+    Reward for approaching the ball, with distance cap and max reward on kick event.
+
+    Args:
+        distance_cap: Maximum distance considered in reward calculation.
+        ball_speed_threshold: If ball speed exceeds this, reward is set to max_reward.
+        max_reward: The maximum reward value if ball is moving fast (i.e., kicked).
     """
-    threshold = 0.1
-    # Get the toe's world position (assumes shape [N, 3])
+    distance_threshold = 0.05  
+    ball_speed_threshold = 0.3,
+
+    # Get the toe position
     toe_pos = env.scene["kicking_leg_frame"].data.target_pos_w[..., 0, :]
-    # Get the ball's world position (assumed to be in root_pos_w)
+    # Get the ball position
     ball_pos = env.scene["ball"].data.root_pos_w
-    # Compute Euclidean distance between toe and ball
+    # Compute Euclidean distance
     distance = torch.norm(ball_pos - toe_pos, dim=-1, p=2)
-    
-    # Inverse-square law reward, squared for sharper decay with distance
+
+    # Compute base reward using capped distance
     reward = 1.0 / (1.0 + distance**2)
     reward = torch.pow(reward, 2)
-    # If the toe is within the threshold, double the reward
-    reward = torch.where(distance <= threshold, 2 * reward, reward)
-    # print("approach ball reward shape", reward.shape)
+
+    # Double the reward if within a close range
+    reward = torch.where(distance <= distance_threshold, 2 * reward, reward)
+
+    # Override reward if ball is moving (i.e., kicked)
+    ball_vel = env.scene["ball"].data.root_lin_vel_w  # shape: [N, 3]
+    ball_speed = torch.norm(ball_vel, dim=-1)
+    reward = torch.where(ball_speed > ball_speed_threshold, 2, reward)
+
     return reward
+
 
 
 def ball_displacement_reward(env):
@@ -240,4 +242,21 @@ def support_feet_leave_ground_penalty(env):
     # print("supporting foot penalty:", penalty)
     # print("penalty shape", penalty.shape)
 
+    return penalty
+
+def root_height_penalty(
+    env: ManagerBasedRLEnv, 
+    minimum_height: float, 
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
+) -> torch.Tensor:
+    """Essentially for robot fall. Large negative reward when the robot's root height falls below a threshold."""
+    asset: RigidObject = env.scene[asset_cfg.name]
+    root_height = asset.data.root_pos_w[:, 2]
+
+    # Apply penalty where termination condition is met
+    penalty = torch.where(
+        root_height < minimum_height,
+        torch.tensor(1.0, device=root_height.device),
+        torch.tensor(0.0, device=root_height.device)
+    )
     return penalty

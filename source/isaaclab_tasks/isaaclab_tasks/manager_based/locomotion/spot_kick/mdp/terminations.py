@@ -26,16 +26,3 @@ def illegal_contact_kick(env: ManagerBasedRLEnv, threshold: float, sensor_cfg: S
     )
     # print("termination values", termination_value)
     return termination_value
-
-def root_height_below_minimum_kick(
-    env: ManagerBasedRLEnv, minimum_height: float, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
-) -> torch.Tensor:
-    """Terminate when the asset's root height is below the minimum height.
-
-    Note:
-        This is currently only supported for flat terrains, i.e. the minimum height is in the world frame.
-    """
-    # extract the used quantities (to enable type-hinting)
-    asset: RigidObject = env.scene[asset_cfg.name]
-    # print("current_height", asset.data.root_pos_w[:, 2])
-    return asset.data.root_pos_w[:, 2] < minimum_height

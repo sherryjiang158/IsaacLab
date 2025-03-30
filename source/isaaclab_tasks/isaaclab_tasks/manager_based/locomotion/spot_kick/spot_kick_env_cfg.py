@@ -362,18 +362,15 @@ class RewardsCfg:
         func=mdp.action_rate_l2,
         weight=-1e-3
     )
-    
-    # 5. Penalize excessive joint velocities to ensure stable and controlled motion. (smaller)
-    joint_vel = RewTerm(
-        func=mdp.joint_vel_l2,
-        weight=-1e-4
-    )
-    
     # Penalties
-
     support_feet_leave_ground_penalty = RewTerm(
         func=mdp.support_feet_leave_ground_penalty,
         weight=-5.0,  # High weight to strongly discourage lifting support feet
+    )
+
+    robot_fall_penalty = RewTerm(
+        func=mdp.root_height_penalty,
+        weight=-10.0,  # High weight to strongly discourage lifting support feet
     )
 
     # -- penalties
@@ -383,7 +380,7 @@ class RewardsCfg:
         func=mdp.base_motion_penalty, weight=-2.0, params={"asset_cfg": SceneEntityCfg("robot")}
     )
     base_orientation = RewTerm(
-        func=mdp.base_orientation_penalty, weight=-3.0, params={"asset_cfg": SceneEntityCfg("robot")}
+        func=mdp.base_orientation_penalty, weight=-1.0, params={"asset_cfg": SceneEntityCfg("robot")}
     )
     # base_displacement = RewTerm(
     # )
@@ -401,20 +398,13 @@ class RewardsCfg:
         weight=-1.0e-4,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*_h[xy]")},
     )
-    joint_pos_support = RewTerm(
+    joint_pos = RewTerm(
         func=mdp.joint_position_penalty_kick,
-        weight=-2, 
+        weight=-3.0,  # -0.7
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
         },
     )
-    joint_pos_kick = RewTerm(
-        func=mdp.joint_position_penalty_kick,
-        weight=1, #-0.7
-        params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=["fr_hx", "fr_hy", "fr_kn"]),
-        },
-    ) # we allow kick to be able to move more
 
     joint_torques = RewTerm(
         func=mdp.joint_torques_penalty,
@@ -426,6 +416,13 @@ class RewardsCfg:
         weight=-1.0e-2,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*_h[xy]")},
     )
+    joint_vel_support = RewTerm(
+        func=mdp.joint_velocity_penalty,
+        weight=-1.0,
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["fl_hx", "fl_hy", "fl_kn",
+                                                                  "hr_hx", "hr_hy", "hr_kn",
+                                                                  "hl_hx", "hl_hy", "hl_kn"])},
+    )
 
 
 @configclass
@@ -436,6 +433,7 @@ class TerminationsCfg:
     #     func=mdp.illegal_contact_kick,
     #     params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=["body"]), "threshold": 1.0},
     # )
+    # this is for the robot flipping over.
     root_height_below_minimum = DoneTerm(
         func=mdp.root_height_below_minimum_kick, 
         params={"minimum_height": 0.1},

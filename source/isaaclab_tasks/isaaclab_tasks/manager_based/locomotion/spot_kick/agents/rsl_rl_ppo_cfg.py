@@ -40,7 +40,7 @@ from isaaclab.utils import configclass
 @configclass
 class SpotKickPPORunnerCfg(RslRlOnPolicyRunnerCfg):
     num_steps_per_env = 24
-    max_iterations = 10000
+    max_iterations = 20000
     save_interval = 50
     experiment_name = "spot_kick"
     empirical_normalization = False
