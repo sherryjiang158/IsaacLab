@@ -411,10 +411,10 @@ class RewardsCfg:
         func=mdp.joint_position_penalty_kick,
         weight=1, #-0.7
         params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=".fr_*"),
+            "asset_cfg": SceneEntityCfg("robot", joint_names=["fr_hx", "fr_hy", "fr_kn"]),
         },
     ) # we allow kick to be able to move more
-    
+
     joint_torques = RewTerm(
         func=mdp.joint_torques_penalty,
         weight=-5.0e-4,
