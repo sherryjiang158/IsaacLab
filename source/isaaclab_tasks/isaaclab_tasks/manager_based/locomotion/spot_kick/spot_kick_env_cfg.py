@@ -81,20 +81,20 @@ class MySceneCfg(InteractiveSceneCfg):
             },
             joint_vel={".*": 0.0},
         ),
-        actuators={
-            "fr_leg": DelayedPDActuatorCfg(
-                joint_names_expr=["fr_hx", "fr_hy", "fr_kn"],
-                effort_limit=45.0,
-                stiffness=60.0,
-                damping=1.5,
-                min_delay=0,  # physics time steps (min: 2.0*0=0.0ms)
-                max_delay=4,  # physics time steps (max: 2.0*4=8.0ms)
-            ),
-            # "Freeze" the other legs
-            "fl_leg": frozen_actuator(["fl_hx", "fl_hy", "fl_kn"]),
-            "hl_leg": frozen_actuator(["hl_hx", "hl_hy", "hl_kn"]),
-            "hr_leg": frozen_actuator(["hr_hx", "hr_hy", "hr_kn"]),
-        },
+        # actuators={
+        #     "fr_leg": DelayedPDActuatorCfg(
+        #         joint_names_expr=["fr_hx", "fr_hy", "fr_kn"],
+        #         effort_limit=45.0,
+        #         stiffness=60.0,
+        #         damping=1.5,
+        #         min_delay=0,  # physics time steps (min: 2.0*0=0.0ms)
+        #         max_delay=4,  # physics time steps (max: 2.0*4=8.0ms)
+        #     ),
+        #     # "Freeze" the other legs
+        #     "fl_leg": frozen_actuator(["fl_hx", "fl_hy", "fl_kn"]),
+        #     "hl_leg": frozen_actuator(["hl_hx", "hl_hy", "hl_kn"]),
+        #     "hr_leg": frozen_actuator(["hr_hx", "hr_hy", "hr_kn"]),
+        # },
     )
 
     #dx, dy, dz = random.uniform(0, 0.05), random.uniform(0, 0.05), random.uniform(0, 0.05)
@@ -400,20 +400,21 @@ class RewardsCfg:
         weight=-1.0e-4,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*_h[xy]")},
     )
-    # joint_pos_support = RewTerm(
-    #     func=mdp.joint_position_penalty_kick,
-    #     weight=-2, 
-    #     params={
-    #         "asset_cfg": SceneEntityCfg("robot", joint_names=".*_h[xy]"),
-    #     },
-    # )
-    joint_pos = RewTerm(
+    joint_pos_support = RewTerm(
         func=mdp.joint_position_penalty_kick,
-        weight=-1, #-0.7
+        weight=-2, 
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
         },
     )
+    joint_pos_kick = RewTerm(
+        func=mdp.joint_position_penalty_kick,
+        weight=1, #-0.7
+        params={
+            "asset_cfg": SceneEntityCfg("robot", joint_names=".fr_*"),
+        },
+    ) # we allow kick to be able to move more
+    
     joint_torques = RewTerm(
         func=mdp.joint_torques_penalty,
         weight=-5.0e-4,
