@@ -67,17 +67,18 @@ class MySceneCfg(InteractiveSceneCfg):
                 "fl_hx": 0.15,  
                 "fl_hy": 0.8,
                 "fl_kn": -1.5,  
+
                 "fr_hx": -0.15,  # all right hip_x
                 "fr_hy": 0.8,  # front hip_y
                 "fr_kn": -1.5,  # all knees
 
-                "hl_hx": 0.2, # 0.15
+                "hl_hx": 0.25, # 0.15
                 "hl_hy": 1.2,
-                "hl_kn": -2.18,  # all knees
+                "hl_kn": -2,  # all knees
 
-                "hr_hx": -0.15, #-0.15
+                "hr_hx": -0.2, #-0.15
                 "hr_hy": 1.3,  # hind hip_y
-                "hr_kn": -2,  # all knees
+                "hr_kn": -1.9,  # all knees
             },
             joint_vel={".*": 0.0},
         ),
