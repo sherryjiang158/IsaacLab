@@ -38,6 +38,15 @@ from isaaclab.markers.config import FRAME_MARKER_CFG  # isort: skip
 FRAME_MARKER_SMALL_CFG = FRAME_MARKER_CFG.copy()
 FRAME_MARKER_SMALL_CFG.markers["frame"].scale = (0.10, 0.10, 0.10)
 
+def frozen_actuator(joint_names):
+    return DelayedPDActuatorCfg(
+        joint_names_expr=joint_names,
+        effort_limit=100.0,
+        stiffness=1000.0,  # Very high to hold in place
+        damping=100.0,
+        min_delay=0,
+        max_delay=0,
+    )
 
 @configclass
 class MySceneCfg(InteractiveSceneCfg):
@@ -81,6 +90,10 @@ class MySceneCfg(InteractiveSceneCfg):
                 min_delay=0,  # physics time steps (min: 2.0*0=0.0ms)
                 max_delay=4,  # physics time steps (max: 2.0*4=8.0ms)
             ),
+            # "Freeze" the other legs
+            "fl_leg": frozen_actuator(["fl_hx", "fl_hy", "fl_kn"]),
+            "hl_leg": frozen_actuator(["hl_hx", "hl_hy", "hl_kn"]),
+            "hr_leg": frozen_actuator(["hr_hx", "hr_hy", "hr_kn"]),
         },
     )
 
@@ -302,14 +315,14 @@ class EventCfg:
 class RewardsCfg:
     """Reward terms for the kicking MDP."""
 
-    air_time = RewTerm(
-        func=mdp.air_time_reward,
-        weight=0.5,
-        params={
-            "mode_time": 0.4,
-            "sensor_cfg": SceneEntityCfg("contact_forces", body_names="fr_foot"),
-        },
-    )
+    # air_time = RewTerm(
+    #     func=mdp.air_time_reward,
+    #     weight=0.5,
+    #     params={
+    #         "mode_time": 0.4,
+    #         "sensor_cfg": SceneEntityCfg("contact_forces", body_names="fr_foot"),
+    #     },
+    # )
 
     # 1. Approach the ball: 
     # Encourage the kicking leg's toe to get close to the ball.
@@ -387,9 +400,16 @@ class RewardsCfg:
         weight=-1.0e-4,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*_h[xy]")},
     )
+    # joint_pos_support = RewTerm(
+    #     func=mdp.joint_position_penalty_kick,
+    #     weight=-2, 
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot", joint_names=".*_h[xy]"),
+    #     },
+    # )
     joint_pos = RewTerm(
         func=mdp.joint_position_penalty_kick,
-        weight=-0.7,
+        weight=-1, #-0.7
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
         },

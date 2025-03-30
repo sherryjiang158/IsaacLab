@@ -43,6 +43,70 @@ def approach_ball(env):
     # print("approach ball reward shape", reward.shape)
     return reward
 
+
+def ball_displacement_reward(env):
+    ball_data = env.scene["ball"].data
+    current_pos = ball_data.root_state_w[:, :3]
+    return current_pos[:, 0]
+
+
+def kick_ball_velocity_reward(env):
+    """
+    Reward for kicking the ball effectively, based on the ball's velocity.
+    
+    This reward uses a multi-stage bonus approach:
+      - The basic reward is the ball's speed (i.e. the Euclidean norm of its velocity).
+      - An additional bonus is added if the speed exceeds a low threshold.
+      - A further bonus is added if the speed exceeds a high threshold.
+    
+    Explanation:
+      - Retrieves the ball's velocity vector.
+      - Computes its magnitude (speed).
+      - Adds bonus rewards in a piecewise fashion for higher speeds,
+        encouraging the agent to produce a powerful kick.
+    """
+    ball_data = env.scene["ball"].data
+    
+    ball_vel = ball_data.root_state_w[:, 7:10]  # assumed shape [N, 3]
+    # ball_vel_xy = ball_vel[:, :2]
+
+    # desired_direction =   # shape: [N, 2]
+
+    # Project the ball's xy velocity onto the robot's forward direction.
+    # projected_speed = (ball_vel_xy * desired_direction).sum(dim=-1)  # dot product, shape: [N]
+    projected_speed = ball_vel[:, 0] # just the velocity in x directions
+    
+    low_threshold = 0.5 # we can config this differently if we want to
+    high_threshold = 1.0
+    
+    # Bonus of 0.5 if the ball speed is above low_threshold,
+    # additional bonus of 0.5 if above high_threshold.
+    bonus_low = torch.where(projected_speed > low_threshold, 0.5, torch.tensor(0.0, device=projected_speed.device))
+    bonus_high = torch.where(projected_speed > high_threshold, 0.5, torch.tensor(0.0, device=projected_speed.device))
+
+    reward = projected_speed + bonus_low + bonus_high
+    # print("ball velocity reward shape", reward.shape)
+    
+    return reward
+
+
+# def air_time_reward(
+#     env: ManagerBasedRLEnv,
+#     sensor_cfg: SceneEntityCfg,
+#     mode_time: float,
+# ) -> torch.Tensor:
+#     """Reward longer feet air and contact time."""
+#     # extract the used quantities (to enable type-hinting)
+#     contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+#     if contact_sensor.cfg.track_air_time is False:
+#         raise RuntimeError("Activate ContactSensor's track_air_time!")
+#     # compute the reward
+#     current_air_time = contact_sensor.data.current_air_time[:, sensor_cfg.body_ids]
+#     # current_contact_time = contact_sensor.data.current_contact_time[:, sensor_cfg.body_ids]
+
+#     reward = torch.clip(current_air_time, -mode_time, mode_time)
+#     return torch.sum(reward, dim=1)
+
 ##
 # Regularization Penalties
 ##
@@ -104,6 +168,15 @@ def joint_position_penalty_kick(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCf
     # Apply a constant scaling factor if needed
     return 5 * joint_error
 
+def joint_position_penalty_kick(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg) -> torch.Tensor:
+    """Penalize joint position error for the kicking task, where the robot's base remains static."""
+    asset: Articulation = env.scene[asset_cfg.name]
+    # Compute the joint position error
+    joint_error = torch.linalg.norm(asset.data.joint_pos - asset.data.default_joint_pos, dim=1)
+    # Apply a constant scaling factor if needed
+    return 5 * joint_error
+
+
 
 def joint_torques_penalty(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg) -> torch.Tensor:
     """Penalize joint torques on the articulation."""
@@ -117,70 +190,6 @@ def joint_velocity_penalty(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg) ->
     # extract the used quantities (to enable type-hinting)
     asset: Articulation = env.scene[asset_cfg.name]
     return torch.linalg.norm((asset.data.joint_vel), dim=1)
-
-
-def ball_displacement_reward(env):
-    ball_data = env.scene["ball"].data
-    current_pos = ball_data.root_state_w[:, :3]
-    return current_pos[:, 0]
-
-
-def kick_ball_velocity_reward(env):
-    """
-    Reward for kicking the ball effectively, based on the ball's velocity.
-    
-    This reward uses a multi-stage bonus approach:
-      - The basic reward is the ball's speed (i.e. the Euclidean norm of its velocity).
-      - An additional bonus is added if the speed exceeds a low threshold.
-      - A further bonus is added if the speed exceeds a high threshold.
-    
-    Explanation:
-      - Retrieves the ball's velocity vector.
-      - Computes its magnitude (speed).
-      - Adds bonus rewards in a piecewise fashion for higher speeds,
-        encouraging the agent to produce a powerful kick.
-    """
-    ball_data = env.scene["ball"].data
-    
-    ball_vel = ball_data.root_state_w[:, 7:10]  # assumed shape [N, 3]
-    # ball_vel_xy = ball_vel[:, :2]
-
-    # desired_direction =   # shape: [N, 2]
-
-    # Project the ball's xy velocity onto the robot's forward direction.
-    # projected_speed = (ball_vel_xy * desired_direction).sum(dim=-1)  # dot product, shape: [N]
-    projected_speed = ball_vel[:, 0] # just the velocity in x directions
-    
-    low_threshold = 0.5 # we can config this differently if we want to
-    high_threshold = 1.0
-    
-    # Bonus of 0.5 if the ball speed is above low_threshold,
-    # additional bonus of 0.5 if above high_threshold.
-    bonus_low = torch.where(projected_speed > low_threshold, 0.5, torch.tensor(0.0, device=projected_speed.device))
-    bonus_high = torch.where(projected_speed > high_threshold, 0.5, torch.tensor(0.0, device=projected_speed.device))
-
-    reward = projected_speed + bonus_low + bonus_high
-    # print("ball velocity reward shape", reward.shape)
-    
-    return reward
-
-
-def air_time_reward(
-    env: ManagerBasedRLEnv,
-    sensor_cfg: SceneEntityCfg,
-    mode_time: float,
-) -> torch.Tensor:
-    """Reward longer feet air and contact time."""
-    # extract the used quantities (to enable type-hinting)
-    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
-    if contact_sensor.cfg.track_air_time is False:
-        raise RuntimeError("Activate ContactSensor's track_air_time!")
-    # compute the reward
-    current_air_time = contact_sensor.data.current_air_time[:, sensor_cfg.body_ids]
-    # current_contact_time = contact_sensor.data.current_contact_time[:, sensor_cfg.body_ids]
-
-    reward = torch.clip(current_air_time, -mode_time, mode_time)
-    return torch.sum(reward, dim=1)
 
 
 ## omit this first? Since similar information would be captured by base orientation penalty?
