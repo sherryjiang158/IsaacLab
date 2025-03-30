@@ -53,15 +53,20 @@ class MySceneCfg(InteractiveSceneCfg):
         init_state=ArticulationCfg.InitialStateCfg(
             pos=(0.0, 0.0, 0.5),
             joint_pos={
-                "fl_hx": 0.1,  # all left hip_x
-                "hl_hx": 0.1,
-                "fr_hx": -0.1,  # all right hip_x
-                "hr_hx": -0.1,
-                "fr_hy": 0.9,  # front hip_y
-                "fl_hy": 0.9,
-                "hr_hy": 1.1,  # hind hip_y
-                "hl_hy": 1.1,
-                ".*_kn": -1.5,  # all knees
+                "fl_hx": 0.15,  
+                "fl_hy": 0.8,
+                "fl_kn": -1.5,  
+                "fr_hx": -0.15,  # all right hip_x
+                "fr_hy": 0.8,  # front hip_y
+                "fr_kn": -1.5,  # all knees
+
+                "hl_hx": 0.15,
+                "hl_hy": 1.2,
+                "hl_kn": -2.18,  # all knees
+
+                "hr_hx": -0.15,
+                "hr_hy": 1.3,  # hind hip_y
+                "hr_kn": -2,  # all knees
             },
             joint_vel={".*": 0.0},
     ),
