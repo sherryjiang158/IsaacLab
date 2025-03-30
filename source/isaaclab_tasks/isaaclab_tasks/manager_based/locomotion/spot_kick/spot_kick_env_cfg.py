@@ -48,7 +48,24 @@ class MySceneCfg(InteractiveSceneCfg):
         prim_path="/World/Light", spawn=sim_utils.DomeLightCfg(intensity=3000.0, color=(0.75, 0.75, 0.75))
     )
     # Robot configuration
-    robot = SPOT_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+    robot = SPOT_CFG.replace(
+        prim_path="{ENV_REGEX_NS}/Robot",
+        init_state=ArticulationCfg.InitialStateCfg(
+            pos=(0.0, 0.0, 0.5),
+            joint_pos={
+                "fl_hx": 0.1,  # all left hip_x
+                "hl_hx": 0.1,
+                "fr_hx": -0.1,  # all right hip_x
+                "hr_hx": -0.1,
+                "fr_hy": 0.9,  # front hip_y
+                "fl_hy": 0.9,
+                "hr_hy": 1.1,  # hind hip_y
+                "hl_hy": 1.1,
+                ".*_kn": -1.5,  # all knees
+            },
+            joint_vel={".*": 0.0},
+    ),
+    )
 
     #dx, dy, dz = random.uniform(0, 0.05), random.uniform(0, 0.05), random.uniform(0, 0.05)
     
@@ -65,7 +82,7 @@ class MySceneCfg(InteractiveSceneCfg):
             collision_props=sim_utils.CollisionPropertiesCfg(),
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 1.0, 0.0), metallic=0.2),
         ),
-        init_state=RigidObjectCfg.InitialStateCfg(), #pos omitted for initial position
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.1, 0.1, 0.1)), #pos omitted for initial position
     )
 
     contact_forces_ball = ContactSensorCfg(
