@@ -24,7 +24,7 @@ from isaaclab.sensors import ContactSensorCfg
 from isaaclab.sensors import FrameTransformerCfg
 from isaaclab.sensors.frame_transformer import OffsetCfg
 
-from isaaclab.actuators import DelayedPDActuatorCfg,
+from isaaclab.actuators import DelayedPDActuatorCfg
 
 
 from isaaclab.utils import configclass
