@@ -365,12 +365,12 @@ class RewardsCfg:
     # Penalties
     support_feet_leave_ground_penalty = RewTerm(
         func=mdp.support_feet_leave_ground_penalty,
-        weight=-3.0,  # High weight to strongly discourage lifting support feet
+        weight=-5.0,  # High weight to strongly discourage lifting support feet
     )
 
     robot_fall_penalty = RewTerm(
         func=mdp.root_height_penalty,
-        weight=-5.0,  # High weight to strongly discourage lifting support feet
+        weight=-8.0,  # High weight to strongly discourage lifting support feet
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
         },
