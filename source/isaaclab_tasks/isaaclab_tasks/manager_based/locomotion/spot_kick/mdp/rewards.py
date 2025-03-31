@@ -49,6 +49,7 @@ def approach_ball(env):
 def ball_displacement_reward(env):
     ball_data = env.scene["ball"].data
     current_pos = ball_data.root_state_w[:, :3]
+    max_displacement_reward = 3
     return current_pos[:, 0]
 
 
@@ -78,15 +79,15 @@ def kick_ball_velocity_reward(env):
     # projected_speed = (ball_vel_xy * desired_direction).sum(dim=-1)  # dot product, shape: [N]
     projected_speed = ball_vel[:, 0] # just the velocity in x directions
     
-    low_threshold = 0.5 # we can config this differently if we want to
-    high_threshold = 1.0
+    low_threshold = 0.4 # we can config this differently if we want to
+    max_speed_reward = 0.8
+
     
     # Bonus of 0.5 if the ball speed is above low_threshold,
     # additional bonus of 0.5 if above high_threshold.
-    bonus_low = torch.where(projected_speed > low_threshold, 0.5, torch.tensor(0.0, device=projected_speed.device))
-    bonus_high = torch.where(projected_speed > high_threshold, 0.5, torch.tensor(0.0, device=projected_speed.device))
-
-    reward = projected_speed + bonus_low + bonus_high
+    bonus_low = torch.where(projected_speed > low_threshold, 0.2, torch.tensor(0.0, device=projected_speed.device))
+    reward = torch.where(projected_speed > max_speed_reward, max_speed_reward, projected_speed)
+    reward = reward + bonus_low
     # print("ball velocity reward shape", reward.shape)
     
     return reward
