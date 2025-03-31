@@ -37,5 +37,5 @@ def root_height_below_minimum_kick(
     """
     # extract the used quantities (to enable type-hinting)
     asset: RigidObject = env.scene[asset_cfg.name]
-    # print("current_height", asset.data.root_pos_w[:, 2])
+    print("current_height", asset.data.root_pos_w[:, 2])
     return asset.data.root_pos_w[:, 2] < minimum_height
