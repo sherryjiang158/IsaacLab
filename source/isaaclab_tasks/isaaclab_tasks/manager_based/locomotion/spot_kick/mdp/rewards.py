@@ -49,8 +49,10 @@ def approach_ball(env):
 def ball_displacement_reward(env):
     ball_data = env.scene["ball"].data
     current_pos = ball_data.root_state_w[:, :3]
+    displacement = current_pos[:, 0]
     max_displacement_reward = 3
-    return current_pos[:, 0]
+    reward = torch.where(displacement > max_displacement_reward, max_displacement_reward, displacement)
+    return reward
 
 
 def kick_ball_velocity_reward(env):
@@ -93,22 +95,29 @@ def kick_ball_velocity_reward(env):
     return reward
 
 
-# def air_time_reward(
-#     env: ManagerBasedRLEnv,
-#     sensor_cfg: SceneEntityCfg,
-#     mode_time: float,
-# ) -> torch.Tensor:
-#     """Reward longer feet air and contact time."""
-#     # extract the used quantities (to enable type-hinting)
-#     contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
-#     if contact_sensor.cfg.track_air_time is False:
-#         raise RuntimeError("Activate ContactSensor's track_air_time!")
-#     # compute the reward
-#     current_air_time = contact_sensor.data.current_air_time[:, sensor_cfg.body_ids]
-#     # current_contact_time = contact_sensor.data.current_contact_time[:, sensor_cfg.body_ids]
+def air_time_reward(
+    env: ManagerBasedRLEnv,
+    sensor_cfg: SceneEntityCfg,
+    mode_time: float,
+) -> torch.Tensor:
+    """Reward longer feet air and contact time."""
+    # extract the used quantities (to enable type-hinting)
+    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+    if contact_sensor.cfg.track_air_time is False:
+        raise RuntimeError("Activate ContactSensor's track_air_time!")
+    # compute the reward
+    current_air_time = contact_sensor.data.current_air_time[:, sensor_cfg.body_ids]
+    # current_contact_time = contact_sensor.data.current_contact_time[:, sensor_cfg.body_ids]
 
-#     reward = torch.clip(current_air_time, -mode_time, mode_time)
-#     return torch.sum(reward, dim=1)
+    reward = torch.clip(current_air_time, -mode_time, mode_time)
+
+    # Override reward if ball is moving (i.e., kicked)
+    ball_speed_threshold = 0.3
+    ball_vel = env.scene["ball"].data.root_lin_vel_w  # shape: [N, 3]
+    ball_speed = torch.norm(ball_vel, dim=-1)
+    reward = torch.where(ball_speed > ball_speed_threshold, mode_time, reward)
+
+    return torch.sum(reward, dim=1)
 
 ##
 # Regularization Penalties
