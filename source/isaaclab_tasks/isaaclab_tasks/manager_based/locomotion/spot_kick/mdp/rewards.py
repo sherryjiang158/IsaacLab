@@ -82,7 +82,7 @@ def kick_ball_velocity_reward(env):
     projected_speed = ball_vel[:, 0] # just the velocity in x directions
     
     low_threshold = 0.4 # we can config this differently if we want to
-    max_speed_reward = 0.8
+    max_speed_reward = 1.0
 
     
     # Bonus of 0.5 if the ball speed is above low_threshold,
@@ -260,7 +260,7 @@ def root_height_penalty(
 ) -> torch.Tensor:
     """Essentially for robot fall. Large negative reward when the robot's root height falls below a threshold."""
     asset: Articulation = env.scene[asset_cfg.name]
-    minimum_height = 0.17
+    minimum_height = 0.18
 
     root_height = asset.data.root_pos_w[:, 2]
 
