@@ -439,7 +439,7 @@ class TerminationsCfg:
     # this is for the robot flipping over.
     root_height_below_minimum = DoneTerm(
         func=mdp.root_height_below_minimum_kick, 
-        params={"minimum_height": 0.17},
+        params={"minimum_height": 0.1},
     )
 
 
