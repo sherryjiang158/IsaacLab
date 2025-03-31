@@ -49,13 +49,7 @@ def approach_ball(env):
 def ball_displacement_reward(env):
     ball_data = env.scene["ball"].data
     current_pos = ball_data.root_state_w[:, :3]
-    env_origins = env.scene.env_origins
-
-    displacement = current_pos[:, 0] - env_origins[:, 0]
-    #  print("displacement", displacement)
-    max_displacement_reward = 4.0
-    reward = torch.where(displacement > max_displacement_reward, max_displacement_reward, displacement)
-    return reward
+    return current_pos[:, 0]
 
 
 def kick_ball_velocity_reward(env):
@@ -84,15 +78,15 @@ def kick_ball_velocity_reward(env):
     # projected_speed = (ball_vel_xy * desired_direction).sum(dim=-1)  # dot product, shape: [N]
     projected_speed = ball_vel[:, 0] # just the velocity in x directions
     
-    low_threshold = 0.4 # we can config this differently if we want to
-    max_speed_reward = 1.0
-
+    low_threshold = 0.5 # we can config this differently if we want to
+    high_threshold = 1.0
     
     # Bonus of 0.5 if the ball speed is above low_threshold,
     # additional bonus of 0.5 if above high_threshold.
-    bonus_low = torch.where(projected_speed > low_threshold, 0.2, torch.tensor(0.0, device=projected_speed.device))
-    reward = torch.where(projected_speed > max_speed_reward, max_speed_reward, projected_speed)
-    reward = reward + bonus_low
+    bonus_low = torch.where(projected_speed > low_threshold, 0.5, torch.tensor(0.0, device=projected_speed.device))
+    bonus_high = torch.where(projected_speed > high_threshold, 0.5, torch.tensor(0.0, device=projected_speed.device))
+
+    reward = projected_speed + bonus_low + bonus_high
     # print("ball velocity reward shape", reward.shape)
     
     return reward
@@ -113,13 +107,6 @@ def kick_ball_velocity_reward(env):
 #     # current_contact_time = contact_sensor.data.current_contact_time[:, sensor_cfg.body_ids]
 
 #     reward = torch.clip(current_air_time, -mode_time, mode_time)
-
-#     # Override reward if ball is moving (i.e., kicked)
-#     ball_speed_threshold = 0.3
-#     ball_vel = env.scene["ball"].data.root_lin_vel_w  # shape: [N, 3]
-#     ball_speed = torch.norm(ball_vel, dim=-1)
-#     reward = torch.where(ball_speed > ball_speed_threshold, mode_time, reward)
-
 #     return torch.sum(reward, dim=1)
 
 ##
@@ -263,7 +250,7 @@ def root_height_penalty(
 ) -> torch.Tensor:
     """Essentially for robot fall. Large negative reward when the robot's root height falls below a threshold."""
     asset: Articulation = env.scene[asset_cfg.name]
-    minimum_height = 0.11
+    minimum_height = 0.1
 
     root_height = asset.data.root_pos_w[:, 2]
 

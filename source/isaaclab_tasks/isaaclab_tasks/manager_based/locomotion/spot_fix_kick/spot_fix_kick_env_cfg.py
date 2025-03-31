@@ -407,7 +407,7 @@ class SpotKickEnvCfg(ManagerBasedRLEnvCfg):
     #     """Post initialization."""
         # General settings
         self.decimation = 4
-        self.episode_length_s = 4.0  # Shorter episodes for kicking
+        self.episode_length_s = 2.0  # Shorter episodes for kicking
         
         # Simulation settings
         self.sim.dt = 0.005

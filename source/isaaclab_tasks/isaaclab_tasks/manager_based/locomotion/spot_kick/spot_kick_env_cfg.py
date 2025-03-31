@@ -333,7 +333,7 @@ class RewardsCfg:
     )
     ball_displacement = RewTerm(
         func=mdp.ball_displacement_reward,
-        weight = 3.0
+        weight = 5.0
     )
     
     # # 2. Alignment of kicking leg: Reward for aligning the kicking leg (toe) properly with the ball.
@@ -346,7 +346,7 @@ class RewardsCfg:
     # (measured by ball velocity post-impact).
     kick_ball_velocity = RewTerm(
         func=mdp.kick_ball_velocity_reward,
-        weight=3.0
+        weight=5.0
     )
     
     # Let's not work on this yet... right now, just focus on get the ball rolling.
@@ -403,7 +403,7 @@ class RewardsCfg:
     )
     joint_pos = RewTerm(
         func=mdp.joint_position_penalty_kick,
-        weight=-1.0,  # -0.7
+        weight=-3.0,  # -0.7
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
         },
@@ -468,8 +468,7 @@ class SpotKickEnvCfg(ManagerBasedRLEnvCfg):
     #     """Post initialization."""
         # General settings
         self.decimation = 4
-        self.episode_length_s = 4.0  # Shorter episodes for kicking
-        self.wait_for_textures = True
+        self.episode_length_s = 2.0  # Shorter episodes for kicking
         
         # Simulation settings
         self.sim.dt = 0.005
