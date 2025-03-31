@@ -49,9 +49,11 @@ def approach_ball(env):
 def ball_displacement_reward(env):
     ball_data = env.scene["ball"].data
     current_pos = ball_data.root_state_w[:, :3]
-    displacement = current_pos[:, 0]
+    env_origins = env.scene.env_origins
+
+    displacement = current_pos[:, 0] - env_origins[:, 0]
     print("displacement", displacement)
-    max_displacement_reward = 3
+    max_displacement_reward = 3.0
     reward = torch.where(displacement > max_displacement_reward, max_displacement_reward, displacement)
     return reward
 
