@@ -251,7 +251,7 @@ def root_height_penalty(
 ) -> torch.Tensor:
     """Essentially for robot fall. Large negative reward when the robot's root height falls below a threshold."""
     asset: Articulation = env.scene[asset_cfg.name]
-    minimum_height = 0.1
+    minimum_height = 0.2
 
     root_height = asset.data.root_pos_w[:, 2]
 
