@@ -52,7 +52,7 @@ def ball_displacement_reward(env):
     env_origins = env.scene.env_origins
 
     displacement = current_pos[:, 0] - env_origins[:, 0]
-    print("displacement", displacement)
+    #  print("displacement", displacement)
     max_displacement_reward = 4.0
     reward = torch.where(displacement > max_displacement_reward, max_displacement_reward, displacement)
     return reward
