@@ -40,5 +40,7 @@ def root_height_below_minimum_kick(
     # print("current_height", asset.data.root_pos_w[:, 2])
     return asset.data.root_pos_w[:, 2] < minimum_height
 
-def successful_kick(env: ManagerBasedRLEnv) -> torch.Tensor:
-    
+# def successful_kick(env: ManagerBasedRLEnv) -> torch.Tensor:
+#     # ball displacement above a bar
+#     # ball velocity above a bar
+#     # robot body is balanced
