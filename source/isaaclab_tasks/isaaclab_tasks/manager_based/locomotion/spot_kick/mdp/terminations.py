@@ -39,3 +39,6 @@ def root_height_below_minimum_kick(
     asset: RigidObject = env.scene[asset_cfg.name]
     # print("current_height", asset.data.root_pos_w[:, 2])
     return asset.data.root_pos_w[:, 2] < minimum_height
+
+def successful_kick(env: ManagerBasedRLEnv) -> torch.Tensor:
+    

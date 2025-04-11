@@ -241,18 +241,18 @@ class ObservationsCfg:
             noise=Unoise(n_min=-1.5, n_max=1.5)
         )
         
-        # Ball state
-        ball_pos = ObsTerm(
-            func=mdp.ball_position,
-            noise=Unoise(n_min=-0.05, n_max=0.05)
-        )
-        ball_velocity = ObsTerm(
-            func=mdp.ball_velocity,
-            noise=Unoise(n_min=-0.1, n_max=0.1)
-        )
+        # # Ball state
+        # ball_pos = ObsTerm(
+        #     func=mdp.ball_position,
+        #     noise=Unoise(n_min=-0.05, n_max=0.05)
+        # )
+        # ball_velocity = ObsTerm(
+        #     func=mdp.ball_velocity,
+        #     noise=Unoise(n_min=-0.1, n_max=0.1)
+        # )
 
-        # Leg to Ball Distance
-        rel_ball_leg_distance = ObsTerm(func=mdp.rel_ball_leg_position)
+        # # Leg to Ball Distance
+        # rel_ball_leg_distance = ObsTerm(func=mdp.rel_ball_leg_position)
         
         # Last action
         actions = ObsTerm(func=mdp.last_action)
